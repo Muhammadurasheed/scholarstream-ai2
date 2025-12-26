@@ -39,72 +39,126 @@ DORAHACKS_GRAPHQL_URL = "https://dorahacks.io/graphql"
 async def fetch_dorahacks_hackathons() -> List[Dict[str, Any]]:
     """
     Fetch hackathons from DoraHacks using Sentinel Drone to bypass WAF.
+    Enhanced with schema-tolerant JSON parsing for various API response formats.
     """
+    import re
+    
+    def extract_json_from_content(content: str) -> Any:
+        """Extract JSON from browser-rendered content (handles <pre> wrapping)"""
+        if not content:
+            return None
+        
+        # Try to extract JSON from Pre tag if wrapped by browser
+        pre_match = re.search(r'<pre[^>]*>(.*?)</pre>', content, re.DOTALL)
+        json_text = pre_match.group(1) if pre_match else content
+        
+        # Clean HTML entities
+        json_text = json_text.replace('&quot;', '"').replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
+        
+        # Try array first (common for list endpoints)
+        start_list = json_text.find('[')
+        start_obj = json_text.find('{')
+        
+        if start_list != -1 and (start_obj == -1 or start_list < start_obj):
+            end = json_text.rfind(']')
+            if end != -1:
+                try:
+                    return json.loads(json_text[start_list:end+1])
+                except:
+                    pass
+        
+        # Try object
+        if start_obj != -1:
+            end = json_text.rfind('}')
+            if end != -1:
+                try:
+                    return json.loads(json_text[start_obj:end+1])
+                except:
+                    pass
+        
+        return None
+    
+    def extract_hackathons_from_data(data: Any) -> List[Dict[str, Any]]:
+        """Schema-tolerant extraction: handles {results: []}, {items: []}, {data: []}, [...], etc."""
+        if isinstance(data, list):
+            return data
+        
+        if isinstance(data, dict):
+            # Try common API response patterns
+            for key in ['results', 'items', 'data', 'hackathons', 'list', 'records']:
+                val = data.get(key)
+                if isinstance(val, list):
+                    return val
+                if isinstance(val, dict):
+                    # Nested: {data: {list: []}} or {data: {items: []}}
+                    for subkey in ['list', 'items', 'results', 'hackathons']:
+                        subval = val.get(subkey)
+                        if isinstance(subval, list):
+                            return subval
+        
+        return []
+    
     try:
-        url = "https://dorahacks.io/api/hackathon?page=1&page_size=24&status=active"
-        logger.info("Fetching DoraHacks via Sentinel Drone...")
+        # Try multiple API endpoints (DoraHacks has changed their API structure before)
+        api_urls = [
+            "https://dorahacks.io/api/hackathon?page=1&page_size=50&status=active",
+            "https://dorahacks.io/api/hackathon/list?page=1&limit=50",
+            "https://dorahacks.io/api/v1/hackathon?status=active&limit=50",
+        ]
         
-        # Use fetch_content (uses Playwright)
-        content = await crawler_service.fetch_content(url)
+        all_hackathons = []
         
-        if content:
-             # Browser returns HTML wrapping JSON usually if it's an API
-             # Or just the JSON text.
-             import re
-             # Try to extract JSON from Pre tag if wrapped
-             pre_match = re.search(r'<pre[^>]*>(.*?)</pre>', content, re.DOTALL)
-             json_text = pre_match.group(1) if pre_match else content
-             
-             # Clean entities
-             json_text = json_text.replace('&quot;', '"').replace('&lt;', '<').replace('&gt;', '>')
-             
-             # Find JSON object
-             start = json_text.find('{')
-             end = json_text.rfind('}')
-             if start != -1 and end != -1:
-                 try:
-                     data = json.loads(json_text[start:end+1])
-                     hackathons = data.get('results', []) if isinstance(data.get('results'), list) else data.get('items', [])
-                     if not hackathons and isinstance(data, list):
-                         hackathons = data
-                     logger.info("DoraHacks API success", count=len(hackathons))
-                     return hackathons
-                 except:
-                     pass
+        for api_url in api_urls:
+            logger.info("Fetching DoraHacks via API", url=api_url)
+            content = await crawler_service.fetch_content(api_url)
+            
+            if content:
+                data = extract_json_from_content(content)
+                if data:
+                    hackathons = extract_hackathons_from_data(data)
+                    if hackathons:
+                        logger.info("DoraHacks API success", url=api_url, count=len(hackathons))
+                        all_hackathons.extend(hackathons)
+                        break  # Stop if we got results
         
-        # Fallback: Scrape Frontend if API failed
-        if not content or "results" not in content:
-            logger.info("DoraHacks API format not found, attempting frontend scrape...")
-            frontend_url = "https://dorahacks.io/hackathon"
-            html = await crawler_service.fetch_content(frontend_url)
-            if html:
-                # Look for __NEXT_DATA__
-                match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', html)
-                if match:
-                    try:
-                        data = json.loads(match.group(1))
-                        # Navigate key paths (usually props.pageProps.initialState...)
-                        # Searching recursively for objects with 'slug' and 'totalPrize'
-                        def find_hackathons(obj):
+        if all_hackathons:
+            return all_hackathons
+        
+        # Fallback: Scrape Frontend if all APIs failed
+        logger.info("DoraHacks API endpoints returned no data, attempting frontend scrape...")
+        frontend_url = "https://dorahacks.io/hackathon"
+        html = await crawler_service.fetch_content(frontend_url)
+        
+        if html:
+            # Look for __NEXT_DATA__
+            match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', html, re.DOTALL)
+            if match:
+                try:
+                    data = json.loads(match.group(1))
+                    
+                    # Recursive search for hackathon-like objects
+                    def find_hackathons(obj, found=None):
+                        if found is None:
                             found = []
-                            if isinstance(obj, dict):
-                                if 'slug' in obj and 'totalPrize' in obj:
-                                    found.append(obj)
-                                for k, v in obj.items():
-                                    found.extend(find_hackathons(v))
-                            elif isinstance(obj, list):
-                                for item in obj:
-                                    found.extend(find_hackathons(item))
-                            return found
-                        
-                        hackathons = find_hackathons(data)
-                        # Deduplicate
-                        unique = {h['slug']: h for h in hackathons}.values()
-                        if unique:
-                            logger.info("DoraHacks frontend scrape success", count=len(unique))
-                            return list(unique)
-                    except:
-                        pass
+                        if isinstance(obj, dict):
+                            # DoraHacks hackathons have 'slug' and often 'totalPrize' or 'name'
+                            if 'slug' in obj and ('totalPrize' in obj or 'name' in obj or 'title' in obj):
+                                found.append(obj)
+                            for v in obj.values():
+                                find_hackathons(v, found)
+                        elif isinstance(obj, list):
+                            for item in obj:
+                                find_hackathons(item, found)
+                        return found
+                    
+                    hackathons = find_hackathons(data)
+                    # Deduplicate by slug
+                    unique = {h.get('slug', ''): h for h in hackathons if h.get('slug')}
+                    if unique:
+                        logger.info("DoraHacks frontend scrape success", count=len(unique))
+                        return list(unique.values())
+                except Exception as e:
+                    logger.debug("DoraHacks __NEXT_DATA__ parse failed", error=str(e))
 
     except Exception as e:
         logger.warning("DoraHacks fetch failed", error=str(e))

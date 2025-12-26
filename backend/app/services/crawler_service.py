@@ -222,16 +222,35 @@ class UniversalCrawlerService:
             except:
                 pass 
 
-            # EXTRACT
-            content = await page.content()
-            title = await page.title()
+            # EXTRACT with retry logic for navigation errors (TAIKAI fix)
+            content = None
+            title = None
+            for attempt in range(3):
+                try:
+                    content = await page.content()
+                    title = await page.title()
+                    break
+                except Exception as nav_error:
+                    if "navigating" in str(nav_error).lower():
+                        logger.debug("Page still navigating, retrying...", url=url, attempt=attempt+1)
+                        await asyncio.sleep(0.5 + random.random())  # 500-1500ms jitter
+                        await page.wait_for_load_state("domcontentloaded", timeout=5000)
+                    else:
+                        raise
+            
+            if not content:
+                logger.warning("Drone mission aborted: Failed to extract content after retries", url=url)
+                return
             
             # CONTENT GUARD: Don't transmit shells or error pages
             if "Page Not Found" in title or "404" in title:
                 logger.warning("Drone mission aborted: 404/Not Found", url=url, title=title)
                 return
+            
+            # SMART CONTENT GUARD: Allow thin content for JSON API endpoints
+            is_api_endpoint = '/api/' in url or '/graphql' in url
                 
-            if len(content) < 5000:
+            if len(content) < 5000 and not is_api_endpoint:
                 logger.warning("Drone mission aborted: Content too thin (Potential Loading Shell)", url=url, size=len(content))
                 return
             

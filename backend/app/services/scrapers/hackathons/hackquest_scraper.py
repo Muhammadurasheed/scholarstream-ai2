@@ -72,20 +72,50 @@ async def fetch_hackquest_events() -> List[Dict[str, Any]]:
         url = "https://www.hackquest.io/hackathons"
         logger.info("HackQuest Drone approaching frontend...")
         
-        # Get full page HTML
+        # Get full page HTML (FIXED: removed duplicate fetch call)
         html = await crawler_service.fetch_content(url)
         
-
-        # Get full page HTML
-        html = await crawler_service.fetch_content(url)
+        if not html:
+            logger.warning("HackQuest fetch returned empty content")
+            return []
         
-        if html:
-            from bs4 import BeautifulSoup
-            soup = BeautifulSoup(html, 'html.parser')
-            
-            # Helper to find hackathons via DOM
-            # Selector: a[href^='/hackathons/']
-            cards = soup.select("a[href^='/hackathons/']")
+        # PRIORITY 1: Try to extract from __NEXT_DATA__ (more stable than DOM)
+        import re
+        next_data_match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', html)
+        if next_data_match:
+            try:
+                data = json.loads(next_data_match.group(1))
+                # Search for hackathon objects in the hydration state
+                def find_hackathons(obj, found=None):
+                    if found is None:
+                        found = []
+                    if isinstance(obj, dict):
+                        # HackQuest hackathon objects usually have 'alias' and 'name' fields
+                        if 'alias' in obj and 'name' in obj and isinstance(obj.get('name'), str):
+                            found.append(obj)
+                        for v in obj.values():
+                            find_hackathons(v, found)
+                    elif isinstance(obj, list):
+                        for item in obj:
+                            find_hackathons(item, found)
+                    return found
+                
+                hackathons = find_hackathons(data)
+                # Deduplicate by alias
+                unique = {h.get('alias', h.get('id', '')): h for h in hackathons if h.get('alias') or h.get('id')}
+                if unique:
+                    logger.info("HackQuest __NEXT_DATA__ parse success", count=len(unique))
+                    return list(unique.values())
+            except Exception as e:
+                logger.debug("HackQuest __NEXT_DATA__ parse failed, falling back to DOM", error=str(e))
+        
+        # FALLBACK: DOM scraping with BeautifulSoup
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(html, 'html.parser')
+        
+        # Helper to find hackathons via DOM
+        # Selector: a[href^='/hackathons/']
+        cards = soup.select("a[href^='/hackathons/']")
             serialized_events = []
             
             for card in cards:
