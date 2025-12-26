@@ -181,11 +181,14 @@ def transform_intigriti_program(item: Dict[str, Any]) -> Optional[Scholarship]:
     try:
         name = item.get('companyName') or item.get('name')
         handle = item.get('companyHandle') or item.get('handle')
+        program_handle = item.get('programHandle') or item.get('handle') or handle
         
         if not name:
             return None
-            
-        url = f"https://www.intigriti.com/programs/{handle}/{item.get('programHandle', handle)}"
+        
+        # FIX: Use the PUBLIC researcher-facing URL format that doesn't require auth
+        # Format: https://www.intigriti.com/researchers/programs/{handle}/{programHandle}/detail
+        url = f"https://www.intigriti.com/researchers/programs/{handle}/{program_handle}/detail"
         
         # Max bounty
         amount = 0

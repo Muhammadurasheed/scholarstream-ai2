@@ -116,52 +116,52 @@ async def fetch_hackquest_events() -> List[Dict[str, Any]]:
         # Helper to find hackathons via DOM
         # Selector: a[href^='/hackathons/']
         cards = soup.select("a[href^='/hackathons/']")
-            serialized_events = []
-            
-            for card in cards:
-                try:
-                    # Title is usually in an h2
-                    title_tag = card.find('h2')
-                    if not title_tag: continue
-                    title = title_tag.get_text(strip=True)
-                    
-                    href = card.get('href', '')
-                    alias = href.split('/')[-1] if href else ''
-                    
-                    # Status/Deadline often in generic divs. 
-                    # We grab all text to verify it's a valid card
-                    text_content = card.get_text(" ", strip=True)
-                    
-                    # Basic reconstruction of an event object
-                    event = {
-                        "id": alias, # use alias as ID
-                        "name": title,
-                        "alias": alias,
-                        "description": text_content[:200], # approximate
-                        "endTime": None # scraped DOM usually doesn't have easy ISO dates
-                    }
-                    
-                    # Attempt to find prize
-                    # Look for text like "USD" or "$"
-                    if "$" in text_content or "USD" in text_content:
-                        # Extract basic number
-                        import re
-                        prize_match = re.search(r'\$?([\d,]+)\s*USD', text_content)
-                        if prize_match:
-                             event["rewards"] = [{"amount": prize_match.group(1).replace(',', '')}]
-                    
-                    if title:
-                        serialized_events.append(event)
-                        
-                except Exception:
+        serialized_events = []
+        
+        for card in cards:
+            try:
+                # Title is usually in an h2
+                title_tag = card.find('h2')
+                if not title_tag:
                     continue
-            
-            # Deduplicate by alias
-            unique = {e['alias']: e for e in serialized_events}.values()
-            
-            if unique:
-                logger.info("HackQuest DOM scrape success", count=len(unique))
-                return list(unique)
+                title = title_tag.get_text(strip=True)
+                
+                href = card.get('href', '')
+                alias = href.split('/')[-1] if href else ''
+                
+                # Status/Deadline often in generic divs. 
+                # We grab all text to verify it's a valid card
+                text_content = card.get_text(" ", strip=True)
+                
+                # Basic reconstruction of an event object
+                event = {
+                    "id": alias,  # use alias as ID
+                    "name": title,
+                    "alias": alias,
+                    "description": text_content[:200],  # approximate
+                    "endTime": None  # scraped DOM usually doesn't have easy ISO dates
+                }
+                
+                # Attempt to find prize
+                # Look for text like "USD" or "$"
+                if "$" in text_content or "USD" in text_content:
+                    # Extract basic number
+                    prize_match = re.search(r'\$?([\d,]+)\s*USD', text_content)
+                    if prize_match:
+                        event["rewards"] = [{"amount": prize_match.group(1).replace(',', '')}]
+                
+                if title:
+                    serialized_events.append(event)
+                    
+            except Exception:
+                continue
+        
+        # Deduplicate by alias
+        unique = {e['alias']: e for e in serialized_events}.values()
+        
+        if unique:
+            logger.info("HackQuest DOM scrape success", count=len(unique))
+            return list(unique)
 
     except Exception as e:
         logger.warning("HackQuest frontend scrape failed", error=str(e))
