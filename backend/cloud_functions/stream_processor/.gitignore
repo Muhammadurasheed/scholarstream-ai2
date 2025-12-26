@@ -1,0 +1,4 @@
+# Add service account key to gitignore
+service-account-key.json
+*.json
+!requirements.txt

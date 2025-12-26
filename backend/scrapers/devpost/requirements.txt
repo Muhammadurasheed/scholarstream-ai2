@@ -1,0 +1,17 @@
+# Devpost Continuous Scraper - Requirements
+# For deployment to Google Cloud Run
+
+# Core dependencies
+httpx==0.25.2
+beautifulsoup4==4.12.2
+lxml==4.9.3
+structlog==23.2.0
+
+# Kafka streaming
+confluent-kafka==2.3.0
+
+# HTTP server for health checks
+aiohttp==3.9.1
+
+# Environment management
+python-dotenv==1.0.0

@@ -1,0 +1,1504 @@
+[
+    {
+        "timestamp": 1765690650714,
+        "timestampType": "CREATE_TIME",
+        "partition": 5,
+        "offset": 20842,
+        "key": "ai-refinery",
+        "value": {
+            "source": "multi-batch",
+            "enriched_data": {
+                "title": "Albert Francis Gilmartin Memorial Scholarship Program",
+                "organization": "The Boston Foundation",
+                "amount_value": 0,
+                "amount_display": "TBD",
+                "deadline": "2026-02-06",
+                "description": "The Boston Foundation has established a scholarship program to assist high school seniors at Quincy High School and North…",
+                "url": "https://scholarshipamerica.org/scholarship/gilmartinscholarship/",
+                "type": "Scholarship",
+                "eligibility": [
+                    "High school seniors at Quincy High School and North Quincy High School",
+                    "Four-Year University",
+                    "Massachusetts"
+                ]
+            },
+            "raw_data": {},
+            "enriched_at": 1765690650.714685,
+            "ai_model": "gemini-2.0-flash",
+            "origin_url": "https://scholarshipamerica.org/scholarship/gilmartinscholarship/"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765690650714,
+        "timestampType": "CREATE_TIME",
+        "partition": 5,
+        "offset": 20843,
+        "key": "ai-refinery",
+        "value": {
+            "source": "multi-batch",
+            "enriched_data": {
+                "title": "ALEC Bright Future Scholarship Program",
+                "organization": "Abbott Laboratories Employees Credit Union (ALEC)",
+                "amount_value": 2000,
+                "amount_display": "$2,000",
+                "deadline": "2026-05-01",
+                "description": "Abbott Laboratories Employees Credit Union (ALEC) has established a scholarship program to assist members of the credit…",
+                "url": "https://scholarshipamerica.org/scholarship/alec/",
+                "type": "Scholarship",
+                "eligibility": [
+                    "Members of the credit union",
+                    "Community or Technical College",
+                    "Four-Year University"
+                ]
+            },
+            "raw_data": {},
+            "enriched_at": 1765690650.714685,
+            "ai_model": "gemini-2.0-flash",
+            "origin_url": "https://scholarshipamerica.org/scholarship/alec/"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765690650714,
+        "timestampType": "CREATE_TIME",
+        "partition": 5,
+        "offset": 20844,
+        "key": "ai-refinery",
+        "value": {
+            "source": "multi-batch",
+            "enriched_data": {
+                "title": "Alliant Energy Innovation Scholarship Program",
+                "organization": "Alliant Energy",
+                "amount_value": 1000,
+                "amount_display": "$1,000",
+                "deadline": "2026-02-03",
+                "description": "To encourage innovation and creative problem solving, Alliant Energy offers a scholarship program for students pursuing a…",
+                "url": "https://scholarshipamerica.org/scholarship/alliantenergyinnovation/",
+                "type": "Scholarship",
+                "eligibility": [
+                    "Students pursuing a degree in innovation",
+                    "Community or Technical College",
+                    "Four-Year University",
+                    "Iowa",
+                    "Wisconsin"
+                ]
+            },
+            "raw_data": {},
+            "enriched_at": 1765690650.714685,
+            "ai_model": "gemini-2.0-flash",
+            "origin_url": "https://scholarshipamerica.org/scholarship/alliantenergyinnovation/"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765690650712,
+        "timestampType": "CREATE_TIME",
+        "partition": 5,
+        "offset": 20837,
+        "key": "ai-refinery",
+        "value": {
+            "source": "multi-batch",
+            "enriched_data": {
+                "title": "#RAREis Scholarship Fund",
+                "organization": "EveryLife Foundation for Rare Diseases",
+                "amount_value": 5000,
+                "amount_display": "$5,000",
+                "deadline": "2026-04-28",
+                "description": "The EveryLife Foundation for Rare Diseases has established the #RAREis Scholarship Fund to help adults with rare diseases in…",
+                "url": "https://scholarshipamerica.org/scholarship/rareis/",
+                "type": "Scholarship",
+                "eligibility": [
+                    "Adults with rare diseases",
+                    "Community or Technical College",
+                    "Four-Year University",
+                    "Graduate School",
+                    "National"
+                ]
+            },
+            "raw_data": {},
+            "enriched_at": 1765690650.712172,
+            "ai_model": "gemini-2.0-flash",
+            "origin_url": "https://scholarshipamerica.org/scholarship/rareis/"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765690650712,
+        "timestampType": "CREATE_TIME",
+        "partition": 5,
+        "offset": 20838,
+        "key": "ai-refinery",
+        "value": {
+            "source": "multi-batch",
+            "enriched_data": {
+                "title": "AbbVie Community Equity Scholarship",
+                "organization": "AbbVie Bioresearch Center, Inc.",
+                "amount_value": 2500,
+                "amount_display": "$2,500 - $5,000",
+                "deadline": "2026-01-13",
+                "description": "AbbVie Bioresearch Center, Inc. has established a scholarship program to assist current undergraduate sophomores living in…",
+                "url": "https://scholarshipamerica.org/scholarship/abbviecommunity/",
+                "type": "Scholarship",
+                "eligibility": [
+                    "Current undergraduate sophomores living in Massachusetts",
+                    "Community or Technical College",
+                    "Four-Year University"
+                ]
+            },
+            "raw_data": {},
+            "enriched_at": 1765690650.712172,
+            "ai_model": "gemini-2.0-flash",
+            "origin_url": "https://scholarshipamerica.org/scholarship/abbviecommunity/"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765690650712,
+        "timestampType": "CREATE_TIME",
+        "partition": 5,
+        "offset": 20839,
+        "key": "ai-refinery",
+        "value": {
+            "source": "multi-batch",
+            "enriched_data": {
+                "title": "AbbVie Immunology Scholarship",
+                "organization": "AbbVie",
+                "amount_value": 20000,
+                "amount_display": "$20,000",
+                "deadline": "2026-06-10",
+                "description": "A scholarship for exceptional students living with chronic inflammatory diseases.",
+                "url": "https://scholarshipamerica.org/scholarship/abbvieimmunologyscholarship/",
+                "type": "Scholarship",
+                "eligibility": [
+                    "Exceptional students living with chronic inflammatory diseases",
+                    "Community or Technical College",
+                    "Four-Year University",
+                    "Graduate School",
+                    "National"
+                ]
+            },
+            "raw_data": {},
+            "enriched_at": 1765690650.712172,
+            "ai_model": "gemini-2.0-flash",
+            "origin_url": "https://scholarshipamerica.org/scholarship/abbvieimmunologyscholarship/"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765690650712,
+        "timestampType": "CREATE_TIME",
+        "partition": 5,
+        "offset": 20840,
+        "key": "ai-refinery",
+        "value": {
+            "source": "multi-batch",
+            "enriched_data": {
+                "title": "Adam Scripps Foundation Scholars Program",
+                "organization": "Adam R. Scripps Foundation",
+                "amount_value": 1000,
+                "amount_display": "$1,000 - $2,500",
+                "deadline": "2026-02-26",
+                "description": "The Adam R. Scripps Foundation has established a scholarship program to assist seniors in Fredericksburg Independent School…",
+                "url": "https://scholarshipamerica.org/scholarship/scrippsscholars/",
+                "type": "Scholarship",
+                "eligibility": [
+                    "Seniors in Fredericksburg Independent School",
+                    "Four-Year University",
+                    "Texas"
+                ]
+            },
+            "raw_data": {},
+            "enriched_at": 1765690650.712172,
+            "ai_model": "gemini-2.0-flash",
+            "origin_url": "https://scholarshipamerica.org/scholarship/scrippsscholars/"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765690650712,
+        "timestampType": "CREATE_TIME",
+        "partition": 5,
+        "offset": 20841,
+        "key": "ai-refinery",
+        "value": {
+            "source": "multi-batch",
+            "enriched_data": {
+                "title": "Albemarle Community Scholarship",
+                "organization": "Albemarle Corporation",
+                "amount_value": 2500,
+                "amount_display": "$2,500 - $5,000",
+                "deadline": "2026-03-06",
+                "description": "Albemarle Corporation has established a scholarship program to assist high school seniors in Cleveland County, North…",
+                "url": "https://scholarshipamerica.org/scholarship/albemarle/",
+                "type": "Scholarship",
+                "eligibility": [
+                    "High school seniors in Cleveland County, North Carolina",
+                    "Community or Technical College",
+                    "Four-Year University"
+                ]
+            },
+            "raw_data": {},
+            "enriched_at": 1765690650.712172,
+            "ai_model": "gemini-2.0-flash",
+            "origin_url": "https://scholarshipamerica.org/scholarship/albemarle/"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765690624244,
+        "timestampType": "CREATE_TIME",
+        "partition": 5,
+        "offset": 20835,
+        "key": "ai-refinery",
+        "value": {
+            "source": "multi-batch",
+            "enriched_data": {
+                "title": "ALEC Bright Future Scholarship Program",
+                "organization": "Scholarship America",
+                "amount_value": 2000,
+                "amount_display": "$2,000",
+                "deadline": "2026-05-01",
+                "description": "Abbott Laboratories Employees Credit Union (ALEC) has established a scholarship program to assist members of the credit…",
+                "url": "https://scholarshipamerica.org/scholarship/alec/",
+                "type": "Scholarship",
+                "eligibility": "Open to all users."
+            },
+            "raw_data": {},
+            "enriched_at": 1765690624.2445834,
+            "ai_model": "gemini-2.0-flash",
+            "origin_url": "https://scholarshipamerica.org/scholarship/alec/"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765690624244,
+        "timestampType": "CREATE_TIME",
+        "partition": 5,
+        "offset": 20836,
+        "key": "ai-refinery",
+        "value": {
+            "source": "multi-batch",
+            "enriched_data": {
+                "title": "Alliant Energy Innovation Scholarship Program",
+                "organization": "Scholarship America",
+                "amount_value": 1000,
+                "amount_display": "$1,000",
+                "deadline": "2026-02-03",
+                "description": "To encourage innovation and creative problem solving, Alliant Energy offers a scholarship program for students pursuing a…",
+                "url": "https://scholarshipamerica.org/scholarship/alliantenergyinnovation/",
+                "type": "Scholarship",
+                "eligibility": "Open to all users."
+            },
+            "raw_data": {},
+            "enriched_at": 1765690624.2445834,
+            "ai_model": "gemini-2.0-flash",
+            "origin_url": "https://scholarshipamerica.org/scholarship/alliantenergyinnovation/"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765513277011,
+        "timestampType": "CREATE_TIME",
+        "partition": 0,
+        "offset": 115,
+        "key": "mlh.io",
+        "value": {
+            "source": "mlh.io",
+            "enriched_data": {
+                "title": "HackPrinceton Fall 2",
+                "organization": "Major League Hacking",
+                "amount_value": 0,
+                "amount_display": null,
+                "deadline": null,
+                "description": "A collegiate hackathon where participants build projects, learn new skills, and compete for prizes organized by Major League Hacking. This event is Gender Equality (50/50) focused.",
+                "url": "https://hackprinceton.com/",
+                "type": "hackathon",
+                "eligibility": "Gender Equality (50/50)"
+            },
+            "raw_data": {},
+            "enriched_at": 1765513277.011019,
+            "ai_model": "gemini-2.5-flash",
+            "origin_url": "https://mlh.io/seasons/2025/events"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765513276999,
+        "timestampType": "CREATE_TIME",
+        "partition": 0,
+        "offset": 106,
+        "key": "mlh.io",
+        "value": {
+            "source": "mlh.io",
+            "enriched_data": {
+                "title": "YCP Hacks",
+                "organization": "Major League Hacking",
+                "amount_value": 0,
+                "amount_display": null,
+                "deadline": "2024-11-03",
+                "description": "A collegiate hackathon where participants build projects, learn new skills, and compete for prizes organized by Major League Hacking.",
+                "url": "https://ycphacks.io",
+                "type": "hackathon",
+                "eligibility": null
+            },
+            "raw_data": {},
+            "enriched_at": 1765513276.99939,
+            "ai_model": "gemini-2.5-flash",
+            "origin_url": "https://mlh.io/seasons/2025/events"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765513276999,
+        "timestampType": "CREATE_TIME",
+        "partition": 0,
+        "offset": 107,
+        "key": "mlh.io",
+        "value": {
+            "source": "mlh.io",
+            "enriched_data": {
+                "title": "BostonHacks",
+                "organization": "Major League Hacking",
+                "amount_value": 0,
+                "amount_display": null,
+                "deadline": "2024-11-03",
+                "description": "A collegiate hackathon where participants build projects, learn new skills, and compete for prizes organized by Major League Hacking.",
+                "url": "https://bostonhacks.org",
+                "type": "hackathon",
+                "eligibility": null
+            },
+            "raw_data": {},
+            "enriched_at": 1765513276.99939,
+            "ai_model": "gemini-2.5-flash",
+            "origin_url": "https://mlh.io/seasons/2025/events"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765513276999,
+        "timestampType": "CREATE_TIME",
+        "partition": 0,
+        "offset": 108,
+        "key": "mlh.io",
+        "value": {
+            "source": "mlh.io",
+            "enriched_data": {
+                "title": "DurHack",
+                "organization": "Major League Hacking",
+                "amount_value": 0,
+                "amount_display": null,
+                "deadline": "2024-11-03",
+                "description": "A collegiate hackathon where participants build projects, learn new skills, and compete for prizes organized by Major League Hacking.",
+                "url": "https://durhack.com",
+                "type": "hackathon",
+                "eligibility": null
+            },
+            "raw_data": {},
+            "enriched_at": 1765513276.99939,
+            "ai_model": "gemini-2.5-flash",
+            "origin_url": "https://mlh.io/seasons/2025/events"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765513276999,
+        "timestampType": "CREATE_TIME",
+        "partition": 0,
+        "offset": 109,
+        "key": "mlh.io",
+        "value": {
+            "source": "mlh.io",
+            "enriched_data": {
+                "title": "HACK.COMS",
+                "organization": "Major League Hacking",
+                "amount_value": 0,
+                "amount_display": null,
+                "deadline": "2024-11-03",
+                "description": "A collegiate hackathon where participants build projects, learn new skills, and compete for prizes organized by Major League Hacking. This event is People of Color Focused focused.",
+                "url": "https://hack-coms-24.devpost.com/?ref_feature=challenge&ref_medium=discover",
+                "type": "hackathon",
+                "eligibility": "People of Color Focused"
+            },
+            "raw_data": {},
+            "enriched_at": 1765513276.99939,
+            "ai_model": "gemini-2.5-flash",
+            "origin_url": "https://mlh.io/seasons/2025/events"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765513276999,
+        "timestampType": "CREATE_TIME",
+        "partition": 0,
+        "offset": 110,
+        "key": "mlh.io",
+        "value": {
+            "source": "mlh.io",
+            "enriched_data": {
+                "title": "HackNC",
+                "organization": "Major League Hacking",
+                "amount_value": 0,
+                "amount_display": null,
+                "deadline": "2024-11-03",
+                "description": "A collegiate hackathon where participants build projects, learn new skills, and compete for prizes organized by Major League Hacking.",
+                "url": "https://hacknc.com",
+                "type": "hackathon",
+                "eligibility": null
+            },
+            "raw_data": {},
+            "enriched_at": 1765513276.99939,
+            "ai_model": "gemini-2.5-flash",
+            "origin_url": "https://mlh.io/seasons/2025/events"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765513276999,
+        "timestampType": "CREATE_TIME",
+        "partition": 0,
+        "offset": 111,
+        "key": "mlh.io",
+        "value": {
+            "source": "mlh.io",
+            "enriched_data": {
+                "title": "HackNJIT 2024",
+                "organization": "Major League Hacking",
+                "amount_value": 0,
+                "amount_display": null,
+                "deadline": "2024-11-03",
+                "description": "A collegiate hackathon where participants build projects, learn new skills, and compete for prizes organized by Major League Hacking.",
+                "url": "https://hacknjit.org",
+                "type": "hackathon",
+                "eligibility": null
+            },
+            "raw_data": {},
+            "enriched_at": 1765513276.99939,
+            "ai_model": "gemini-2.5-flash",
+            "origin_url": "https://mlh.io/seasons/2025/events"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765513276999,
+        "timestampType": "CREATE_TIME",
+        "partition": 0,
+        "offset": 112,
+        "key": "mlh.io",
+        "value": {
+            "source": "mlh.io",
+            "enriched_data": {
+                "title": "HackTX",
+                "organization": "Major League Hacking",
+                "amount_value": 0,
+                "amount_display": null,
+                "deadline": "2024-11-03",
+                "description": "A collegiate hackathon where participants build projects, learn new skills, and compete for prizes organized by Major League Hacking.",
+                "url": "https://hacktx.com/",
+                "type": "hackathon",
+                "eligibility": null
+            },
+            "raw_data": {},
+            "enriched_at": 1765513276.99939,
+            "ai_model": "gemini-2.5-flash",
+            "origin_url": "https://mlh.io/seasons/2025/events"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765513276999,
+        "timestampType": "CREATE_TIME",
+        "partition": 0,
+        "offset": 113,
+        "key": "mlh.io",
+        "value": {
+            "source": "mlh.io",
+            "enriched_data": {
+                "title": "Global Hack Week: Career",
+                "organization": "Major League Hacking",
+                "amount_value": 0,
+                "amount_display": null,
+                "deadline": "2024-11-14",
+                "description": "A collegiate hackathon where participants build projects, learn new skills, and compete for prizes organized by Major League Hacking.",
+                "url": "https://events.mlh.io/events/11595",
+                "type": "hackathon",
+                "eligibility": null
+            },
+            "raw_data": {},
+            "enriched_at": 1765513276.99939,
+            "ai_model": "gemini-2.5-flash",
+            "origin_url": "https://mlh.io/seasons/2025/events"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765513276999,
+        "timestampType": "CREATE_TIME",
+        "partition": 0,
+        "offset": 114,
+        "key": "mlh.io",
+        "value": {
+            "source": "mlh.io",
+            "enriched_data": {
+                "title": "Hack K-State",
+                "organization": "Major League Hacking",
+                "amount_value": 0,
+                "amount_display": null,
+                "deadline": "2024-11-10",
+                "description": "A collegiate hackathon where participants build projects, learn new skills, and compete for prizes organized by Major League Hacking.",
+                "url": "https://hackkstate.tech/",
+                "type": "hackathon",
+                "eligibility": null
+            },
+            "raw_data": {},
+            "enriched_at": 1765513276.99939,
+            "ai_model": "gemini-2.5-flash",
+            "origin_url": "https://mlh.io/seasons/2025/events"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765513004596,
+        "timestampType": "CREATE_TIME",
+        "partition": 4,
+        "offset": 135,
+        "key": "www.kaggle.com",
+        "value": {
+            "source": "www.kaggle.com",
+            "enriched_data": {
+                "error": "The provided HTML is a reCAPTCHA challenge page and does not contain the actual content of 'https://www.kaggle.com/competitions'. Therefore, no financial opportunities can be extracted."
+            },
+            "raw_data": {},
+            "enriched_at": 1765513004.5808566,
+            "ai_model": "gemini-2.5-flash",
+            "origin_url": "https://www.kaggle.com/competitions"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765472586837,
+        "timestampType": "CREATE_TIME",
+        "partition": 1,
+        "offset": 1,
+        "key": "unknown",
+        "value": {
+            "source": null,
+            "enriched_data": {
+                "title": "Computer Science Scholarship",
+                "organization": "Tech Foundation",
+                "amount_value": 5000,
+                "amount_display": "$5,000",
+                "deadline": "2025-12-31",
+                "description": "For CS students.",
+                "url": "https://mock-university.edu/scholarships",
+                "type": "scholarship",
+                "eligibility": "For CS students."
+            },
+            "raw_data": {},
+            "enriched_at": 1765472586.837152,
+            "ai_model": "gemini-2.5-flash",
+            "origin_url": "https://mock-university.edu/scholarships"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765471752015,
+        "timestampType": "CREATE_TIME",
+        "partition": 1,
+        "offset": 0,
+        "key": "unknown",
+        "value": {
+            "source": null,
+            "enriched_data": {
+                "title": "Computer Science Scholarship",
+                "organization": "Tech Foundation",
+                "amount_value": 5000,
+                "amount_display": "$5,000",
+                "deadline": "2025-12-31",
+                "description": "For CS students.",
+                "url": "https://mock-university.edu/scholarships",
+                "type": "scholarship",
+                "eligibility": "For CS students."
+            },
+            "raw_data": {},
+            "enriched_at": 1765471752.0157042,
+            "ai_model": "gemini-2.5-flash",
+            "origin_url": "https://mock-university.edu/scholarships"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765471083869,
+        "timestampType": "CREATE_TIME",
+        "partition": 4,
+        "offset": 134,
+        "key": "www.kaggle.com",
+        "value": {
+            "source": "www.kaggle.com",
+            "enriched_data": {
+                "error": "The provided HTML is a reCAPTCHA challenge page and does not contain the content from 'https://www.kaggle.com/competitions'. No financial opportunities can be extracted from this HTML."
+            },
+            "raw_data": {},
+            "enriched_at": 1765471083.86965,
+            "ai_model": "gemini-2.5-flash",
+            "origin_url": "https://www.kaggle.com/competitions"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765222984467,
+        "timestampType": "CREATE_TIME",
+        "partition": 4,
+        "offset": 133,
+        "key": "mlh",
+        "value": {
+            "source": "mlh",
+            "enriched_data": {
+                "type": "hackathon",
+                "name": "MathHacks",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2026-01-12",
+                "deadline_type": "fixed",
+                "url": "https://mathhacks.devpost.com/",
+                "source": "mlh",
+                "urgency": "future",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "MathHacks - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08"
+            },
+            "raw_data": {
+                "type": "hackathon",
+                "name": "MathHacks",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2026-01-12T17:03:45.831905",
+                "deadline_type": "fixed",
+                "url": "https://mathhacks.devpost.com/",
+                "source": "mlh",
+                "urgency": "future",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "MathHacks - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08T16:03:45.831915"
+            },
+            "enriched_at": 1765222984.4686644,
+            "ai_model": "gemini-2.5-flash"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765222971879,
+        "timestampType": "CREATE_TIME",
+        "partition": 4,
+        "offset": 132,
+        "key": "mlh",
+        "value": {
+            "source": "mlh",
+            "enriched_data": {
+                "type": "hackathon",
+                "name": "Mercile J. Lee Hackathon",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2026-02-23",
+                "deadline_type": "fixed",
+                "url": "https://mercile-j-lee-hackathon.devpost.com/",
+                "source": "mlh",
+                "urgency": "future",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "Mercile J. Lee Hackathon - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08"
+            },
+            "raw_data": {
+                "type": "hackathon",
+                "name": "Mercile J. Lee Hackathon",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2026-02-23T17:03:45.831891",
+                "deadline_type": "fixed",
+                "url": "https://mercile-j-lee-hackathon.devpost.com/",
+                "source": "mlh",
+                "urgency": "future",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "Mercile J. Lee Hackathon - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08T16:03:45.831900"
+            },
+            "enriched_at": 1765222971.8790944,
+            "ai_model": "gemini-2.5-flash"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765222971878,
+        "timestampType": "CREATE_TIME",
+        "partition": 4,
+        "offset": 128,
+        "key": "mlh",
+        "value": {
+            "source": "mlh",
+            "enriched_data": {
+                "type": "hackathon",
+                "name": "Codorra",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2026-03-01",
+                "deadline_type": "fixed",
+                "url": "https://codorra-27769.devpost.com/",
+                "source": "mlh",
+                "urgency": "future",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "Codorra - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08"
+            },
+            "raw_data": {
+                "type": "hackathon",
+                "name": "Codorra",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2026-03-01T17:03:45.831832",
+                "deadline_type": "fixed",
+                "url": "https://codorra-27769.devpost.com/",
+                "source": "mlh",
+                "urgency": "future",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "Codorra - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08T16:03:45.831840"
+            },
+            "enriched_at": 1765222971.8784354,
+            "ai_model": "gemini-2.5-flash"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765222971878,
+        "timestampType": "CREATE_TIME",
+        "partition": 4,
+        "offset": 129,
+        "key": "mlh",
+        "value": {
+            "source": "mlh",
+            "enriched_data": {
+                "type": "hackathon",
+                "name": "TinkerX",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2025-12-28",
+                "deadline_type": "fixed",
+                "url": "https://tinkerx.devpost.com/",
+                "source": "mlh",
+                "urgency": "this_month",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "TinkerX - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08"
+            },
+            "raw_data": {
+                "type": "hackathon",
+                "name": "TinkerX",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2025-12-28T17:03:45.831846",
+                "deadline_type": "fixed",
+                "url": "https://tinkerx.devpost.com/",
+                "source": "mlh",
+                "urgency": "this_month",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "TinkerX - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08T16:03:45.831854"
+            },
+            "enriched_at": 1765222971.878672,
+            "ai_model": "gemini-2.5-flash"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765222971878,
+        "timestampType": "CREATE_TIME",
+        "partition": 4,
+        "offset": 130,
+        "key": "mlh",
+        "value": {
+            "source": "mlh",
+            "enriched_data": {
+                "type": "hackathon",
+                "name": "Codorra",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2026-01-31",
+                "deadline_type": "fixed",
+                "url": "https://codorra1.devpost.com/",
+                "source": "mlh",
+                "urgency": "future",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "Codorra - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08"
+            },
+            "raw_data": {
+                "type": "hackathon",
+                "name": "Codorra",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2026-01-31T17:03:45.831859",
+                "deadline_type": "fixed",
+                "url": "https://codorra1.devpost.com/",
+                "source": "mlh",
+                "urgency": "future",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "Codorra - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08T16:03:45.831866"
+            },
+            "enriched_at": 1765222971.8788114,
+            "ai_model": "gemini-2.5-flash"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765222971878,
+        "timestampType": "CREATE_TIME",
+        "partition": 4,
+        "offset": 131,
+        "key": "mlh",
+        "value": {
+            "source": "mlh",
+            "enriched_data": {
+                "type": "hackathon",
+                "name": "Kifiya Inspire 2.0",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2025-12-29",
+                "deadline_type": "fixed",
+                "url": "https://kifiya-inspire-2-0.devpost.com/",
+                "source": "mlh",
+                "urgency": "this_month",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "Kifiya Inspire 2.0 - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08"
+            },
+            "raw_data": {
+                "type": "hackathon",
+                "name": "Kifiya Inspire 2.0",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2025-12-29T17:03:45.831871",
+                "deadline_type": "fixed",
+                "url": "https://kifiya-inspire-2-0.devpost.com/",
+                "source": "mlh",
+                "urgency": "this_month",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "Kifiya Inspire 2.0 - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08T16:03:45.831881"
+            },
+            "enriched_at": 1765222971.8789208,
+            "ai_model": "gemini-2.5-flash"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765222957034,
+        "timestampType": "CREATE_TIME",
+        "partition": 4,
+        "offset": 126,
+        "key": "mlh",
+        "value": {
+            "source": "mlh",
+            "enriched_data": {
+                "type": "hackathon",
+                "name": "AWS Breaking Barriers Challenge 2026 - Dublin",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2026-02-08",
+                "deadline_type": "fixed",
+                "url": "https://aws-breaking-barriers-dub-jn26.devpost.com/",
+                "source": "mlh",
+                "urgency": "future",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "AWS Breaking Barriers Challenge 2026 - Dublin  - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08"
+            },
+            "raw_data": {
+                "type": "hackathon",
+                "name": "AWS Breaking Barriers Challenge 2026 - Dublin ",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2026-02-08T17:03:45.831790",
+                "deadline_type": "fixed",
+                "url": "https://aws-breaking-barriers-dub-jn26.devpost.com/",
+                "source": "mlh",
+                "urgency": "future",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "AWS Breaking Barriers Challenge 2026 - Dublin  - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08T16:03:45.831806"
+            },
+            "enriched_at": 1765222957.034209,
+            "ai_model": "gemini-2.5-flash"
+        },
+        "headers": []
+    },
+    {
+        "timestamp": 1765222957034,
+        "timestampType": "CREATE_TIME",
+        "partition": 4,
+        "offset": 127,
+        "key": "mlh",
+        "value": {
+            "source": "mlh",
+            "enriched_data": {
+                "type": "hackathon",
+                "name": "AWS Breaking Barriers Challenge 2026 - Manchester",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2026-02-15",
+                "deadline_type": "fixed",
+                "url": "https://aws-breaking-barriers-man-jn26.devpost.com/",
+                "source": "mlh",
+                "urgency": "future",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "AWS Breaking Barriers Challenge 2026 - Manchester  - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08"
+            },
+            "raw_data": {
+                "type": "hackathon",
+                "name": "AWS Breaking Barriers Challenge 2026 - Manchester ",
+                "organization": "MLH",
+                "amount": 10000,
+                "amount_display": "$10,000+ in prizes",
+                "deadline": "2026-02-15T17:03:45.831816",
+                "deadline_type": "fixed",
+                "url": "https://aws-breaking-barriers-man-jn26.devpost.com/",
+                "source": "mlh",
+                "urgency": "future",
+                "tags": [
+                    "Hackathon",
+                    "MLH",
+                    "Competition",
+                    "Tech"
+                ],
+                "eligibility": {
+                    "students_only": true,
+                    "grade_levels": [
+                        "Undergraduate",
+                        "Graduate"
+                    ],
+                    "majors": [],
+                    "gpa_min": null,
+                    "citizenship": [
+                        "Any"
+                    ],
+                    "geographic": [
+                        "Online"
+                    ]
+                },
+                "requirements": {
+                    "application_type": "hackathon_registration",
+                    "estimated_time": "24-48 hours",
+                    "skills_needed": [
+                        "Programming",
+                        "Teamwork"
+                    ],
+                    "team_allowed": true,
+                    "team_size_max": 4,
+                    "essay_required": false
+                },
+                "description": "AWS Breaking Barriers Challenge 2026 - Manchester  - MLH sanctioned hackathon",
+                "competition_level": "Medium",
+                "discovered_at": "2025-12-08T16:03:45.831826"
+            },
+            "enriched_at": 1765222957.0343277,
+            "ai_model": "gemini-2.5-flash"
+        },
+        "headers": []
+    }
+]

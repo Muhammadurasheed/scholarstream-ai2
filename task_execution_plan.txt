@@ -1,0 +1,502 @@
+ScholarStream: Event-Driven Architecture Implementation Tasks
+Status: Ready for Execution
+Timeline: 3 Weeks
+Priority: Hackathon Submission
+
+📋 Phase 1: Confluent Streaming Pipeline (Week 1)
+Infrastructure Setup
+ Create Confluent Cloud Account
+
+Sign up at confluent.cloud
+Activate $400 free trial credit
+Note: Account credentials in secure location
+ Provision Kafka Cluster
+
+Region: us-central1 (GCP)
+Cluster type: Basic (sufficient for hackathon)
+Name: scholarstream-cluster
+ Create Kafka Topics
+
+Topic 1: raw-opportunities-stream
+Partitions: 3
+Retention: 7 days
+Cleanup policy: delete
+Topic 2: enriched-opportunities-stream
+Partitions: 3
+Retention: 30 days
+Cleanup policy: delete
+ Generate API Credentials
+
+Create API key for Kafka cluster
+Create API key for Schema Registry
+Store in 
+backend/.env
+ Update Environment Variables
+
+File: 
+backend/.env
+Add:
+CONFLUENT_BOOTSTRAP_SERVERS=pkc-xxxxx.us-central1.gcp.confluent.cloud:9092
+CONFLUENT_API_KEY=your_key
+CONFLUENT_API_SECRET=your_secret
+KAFKA_RAW_TOPIC=raw-opportunities-stream
+KAFKA_ENRICHED_TOPIC=enriched-opportunities-stream
+Scraper Streaming Integration
+ Enhance Devpost Scraper
+
+File: 
+backend/app/services/scrapers/devpost_scraper.py
+Add 
+scrape_generator()
+ method ✅
+Implement 
+_scrape_status_page_generator()
+ ✅
+Uses 
+publish_to_stream()
+ from base class ✅
+Test: Verify messages appear in Confluent Cloud UI
+[/] Enhance Gitcoin Scraper
+
+File: backend/app/services/scrapers/gitcoin.py
+Same pattern as Devpost
+Test: Verify Kafka publishing
+ Enhance MLH Scraper
+
+File: backend/app/services/scrapers/mlh.py
+Same pattern as Devpost
+Test: Verify Kafka publishing
+ Enhance Kaggle Scraper
+
+File: backend/app/services/scrapers/kaggle.py
+Same pattern as Devpost
+Test: Verify Kafka publishing
+ Enhance Scholarships.com Scraper
+
+File: backend/app/services/scrapers/scholarships_com.py
+Same pattern as Devpost
+Test: Verify Kafka publishing
+Cloud Run Deployment
+ Create Devpost Scraper Service
+
+Directory: backend/scrapers/devpost/ ✅
+Files:
+main.py (continuous loop) ✅
+Dockerfile (multi-stage build) ✅
+requirements.txt ✅
+cloudbuild.yaml (CI/CD) ✅
+DEPLOY.md (deployment guide) ✅
+Deploy to Cloud Run (pending Confluent credentials)
+Set min instances = 1
+Test: Check logs for scraping activity
+ Create Gitcoin Scraper Service
+
+Same structure as Devpost
+Deploy to Cloud Run
+Test: Verify running
+ Create MLH Scraper Service
+
+Same structure as Devpost
+Deploy to Cloud Run
+Test: Verify running
+ Monitor Kafka Topics
+
+Check Confluent Cloud UI
+Verify messages flowing to raw-opportunities-stream
+Check message rate (target: 10-20/minute)
+📋 Phase 2: Google Cloud AI Processing (Week 1)
+Vertex AI Setup
+ Enable Google Cloud APIs
+
+Vertex AI API
+Cloud Functions Gen 2
+Pub/Sub API
+Cloud Build API
+ Create Service Account
+
+Name: scholarstream-cloud-function
+Roles:
+Vertex AI User
+Pub/Sub Publisher
+Cloud Functions Invoker
+Download JSON key
+ Configure Vertex AI Credentials
+
+Upload service account key to Cloud Function
+Set environment variable: GOOGLE_APPLICATION_CREDENTIALS
+Cloud Function Deployment
+ Review Stream Processor Code
+
+File: backend/cloud_functions/stream_processor/main.py ✅
+Verify Gemini integration ✅
+Verify embedding generation ✅
+Verify Kafka producer for enriched stream ✅
+ Update Requirements
+
+File: backend/cloud_functions/stream_processor/requirements.txt ✅
+Ensure all dependencies listed:
+functions-framework==3.8.2
+confluent-kafka==2.6.1
+google-cloud-aiplatform==1.75.0
+ Create Deployment Scripts
+
+deploy.sh (Linux/Mac) ✅
+deploy.bat (Windows) ✅
+Embedded Confluent credentials ✅
+Automatic API enablement ✅
+Service account creation ✅
+[/] Deploy Cloud Function
+
+Command: Run deploy.bat or deploy.sh
+Requires: Bootstrap server URL from Confluent Cloud
+Test: Check function logs
+Confluent-Pub/Sub Integration
+ Create Pub/Sub Topic
+
+Name: scholarstream-raw-opportunities
+Region: us-central1
+ Configure Confluent Sink Connector
+
+In Confluent Cloud UI:
+Connectors → Add Connector
+Select "Google Cloud Pub/Sub Sink"
+Source topic: raw-opportunities-stream
+GCP Project: scholarstream-prod
+Pub/Sub Topic: scholarstream-raw-opportunities
+Message format: JSON
+ Test End-to-End Flow
+
+Trigger scraper manually
+Verify message in Kafka
+Verify Cloud Function triggered
+Check enriched message in enriched-opportunities-stream
+Target latency: < 5 seconds
+📋 Phase 3: Real-Time WebSocket Dashboard (Week 2)
+Backend WebSocket Implementation
+ Complete Kafka Consumer
+
+File: backend/app/routes/websocket.py
+Implement kafka_consumer_task() background task
+Subscribe to enriched-opportunities-stream
+Implement match_and_push_to_users() function
+Add connection manager with user profile cache
+ Enhance WebSocket Endpoint
+
+File: backend/app/routes/websocket.py
+Add Firebase token verification
+Load user profile on connection
+Implement heartbeat (every 30s)
+Handle disconnection gracefully
+ Start Consumer on Startup
+
+File: backend/app/main.py
+Verify start_kafka_consumer_task() called in startup event
+Test: Check logs for consumer subscription
+ Test WebSocket Locally
+
+Use Postman or wscat
+Connect to ws://localhost:8000/ws/opportunities?token=test
+Verify connection established message
+Trigger scraper, verify new opportunity pushed
+Frontend Real-Time Hook
+ Create useRealtimeOpportunities Hook
+
+File: src/hooks/useRealtimeOpportunities.ts
+Implement WebSocket connection logic
+Add exponential backoff reconnection
+Handle message types:
+connection_established
+new_opportunity
+heartbeat
+Maintain opportunities state
+ Add Environment Variable
+
+File: .env
+Add: VITE_WS_URL=wss://scholarstream-backend.onrender.com
+For local: ws://localhost:8000
+ Test Hook in Isolation
+
+Create test component
+Verify connection
+Verify state updates
+Dashboard Integration
+ Integrate Real-Time Hook
+
+File: src/pages/Dashboard.tsx
+Import useRealtimeOpportunities
+Merge real-time and cached opportunities
+Deduplicate by ID
+ Add Connection Status Indicator
+
+Show WiFi icon when connected
+Show "Connecting..." when disconnected
+Add badge for new opportunities count
+ Implement Toast Notifications
+
+Show toast for urgent opportunities
+Show toast for high-match opportunities (>85%)
+Auto-dismiss after 5 seconds
+ Add Animated Card Insertion
+
+New opportunities slide in from top
+Highlight with border/background color
+Fade highlight after 3 seconds
+ Test End-to-End
+
+Open dashboard
+Verify WebSocket connected
+Trigger scraper
+See new opportunity appear within 5 seconds
+Verify toast notification
+📋 Phase 4: Chrome Extension Backend (Week 2)
+Extension API Endpoints
+ Create Extension Router
+
+File: backend/app/routes/extension.py
+Already exists, verify imported in main.py
+ Implement GET /api/extension/user-profile
+
+Fetch comprehensive user profile
+Return flattened structure for form filling
+Include: personal, academic, location, background
+ Implement POST /api/extension/map-fields
+
+Accept form fields array
+Call Gemini for intelligent mapping
+Return mappings dict + confidence score
+Add suggestions for manual review
+ Implement POST /api/extension/save-application-data
+
+Store application tracking data
+Save to Firestore applications collection
+Return application ID
+ Test Endpoints
+
+Use Postman
+Test profile fetch
+Test field mapping with sample form
+Verify Gemini responses
+Extension Frontend Integration
+ Update Content Script
+
+File: extension/content-enhanced.js
+Implement autoFillForm() with backend call
+Add loading states
+Add error handling
+ Add Firebase Authentication
+
+Share session from main app
+Or implement separate login flow
+Store token in chrome.storage
+ Test Extension
+
+Load unpacked extension in Chrome
+Navigate to Devpost application
+Click "Scan Page & Autofill"
+Verify 15+ fields filled
+Check accuracy
+📋 Phase 5: Vector Search & RAG (Week 3)
+Firestore Vector Storage
+ Update Cloud Function
+
+File: backend/cloud_functions/stream_processor/main.py
+Ensure embeddings stored in Firestore
+Field: embedding (array of 768 floats)
+ Verify Firestore Schema
+
+Check Firestore console
+Verify opportunities have embedding field
+Verify array length = 768
+Vector Search Implementation
+ Create Vector Search Service
+
+File: backend/app/services/vector_search.py
+Implement semantic_search() function
+Implement cosine_similarity() helper
+Add filters for deadline, eligibility
+ Test Vector Search
+
+Query: "AI hackathons for computer science students"
+Verify returns relevant opportunities
+Check similarity scores
+RAG Chat Enhancement
+ Update Chat Endpoint
+
+File: backend/app/routes/chat.py
+Detect opportunity queries
+Call semantic_search()
+Build context-rich prompt for Gemini
+Return opportunities + AI response
+ Test RAG Chat
+
+Query: "I need money urgently for textbooks by Friday"
+Verify AI returns specific opportunities
+Check deadlines < 7 days
+Verify semantic relevance
+📋 Phase 6: Testing & Polish (Week 3)
+Automated Tests
+ Kafka Integration Tests
+
+File: backend/tests/test_kafka_integration.py
+Test producer publishes
+Test consumer receives
+Test message format
+ WebSocket Tests
+
+File: backend/tests/test_websocket.py
+Test connection
+Test message delivery
+Test reconnection
+ Extension API Tests
+
+File: backend/tests/test_extension_api.py
+Test profile fetch
+Test field mapping
+Test save application
+ Run All Tests
+
+Command: pytest backend/tests -v
+Fix any failures
+Achieve >80% coverage
+Manual End-to-End Testing
+ Real-Time Flow Test
+
+Open dashboard
+Trigger scraper
+Verify opportunity appears < 5 seconds
+Check toast notification
+ Extension Flow Test
+
+Navigate to Devpost
+Auto-fill form
+Verify accuracy >80%
+Check application tracking
+ RAG Chat Test
+
+Ask urgent query
+Verify semantic results
+Check AI response quality
+Performance Optimization
+ Monitor Kafka Consumer Lag
+
+Check Confluent Cloud metrics
+Target: < 1 second lag
+ Optimize Cloud Function
+
+Check execution time
+Target: < 2 seconds
+Add caching if needed
+ WebSocket Connection Monitoring
+
+Track active connections
+Monitor reconnection rate
+Target: >99% uptime
+📋 Phase 7: Documentation & Submission (Week 3)
+Documentation Updates
+ Update README.md
+
+Add Confluent setup section
+Add architecture diagram
+Add demo video link
+ Create DEPLOYMENT.md
+
+Step-by-step Cloud Function deployment
+Confluent Cloud setup
+Environment variables guide
+ Update ARCHITECTURE.md
+
+Event-driven architecture diagram
+Data flow explanation
+Technology stack
+ Create EXTENSION_GUIDE.md
+
+Installation instructions
+Usage guide
+Permissions explanation
+ Update .env.example
+
+Add all Confluent variables
+Add GCP variables
+Add comments
+Demo Video
+ Write Script
+
+0:00-0:30: Problem statement
+0:30-1:00: Architecture overview
+1:00-1:45: Live demo
+1:45-2:30: Extension demo
+2:30-3:00: Impact & CTA
+ Record Footage
+
+Screen recording of dashboard
+Confluent Cloud UI
+Extension auto-fill
+High quality (1080p)
+ Edit Video
+
+Add captions
+Add music
+Add transitions
+Export to MP4
+ Upload to YouTube
+
+Title: "ScholarStream: Real-Time Scholarship Discovery with Confluent & Google Cloud AI"
+Description with links
+Set to public
+Hackathon Submission
+ Verify Hosted Project
+
+URL: scholarstream.vercel.app
+Test all features work
+Check mobile responsiveness
+ Verify GitHub Repository
+
+Public repository
+Open source license (MIT)
+Clean commit history
+No sensitive data
+ Prepare Submission Form
+
+Project title
+Description (500 words)
+Challenge: Confluent + Google Cloud AI
+Technologies used
+Demo video URL
+GitHub URL
+Hosted URL
+ Submit to Devpost
+
+Complete all required fields
+Upload screenshots
+Submit before deadline
+Verify submission received
+✅ Acceptance Criteria
+Phase 1: Streaming Pipeline
+ Messages flowing to Kafka topics
+ Scrapers running continuously
+ Throughput: 10+ opportunities/minute
+Phase 2: AI Processing
+ Cloud Function deployed
+ Enrichment latency < 2 seconds
+ Embeddings generated (768-dim)
+Phase 3: Real-Time Dashboard
+ WebSocket connection stable
+ New opportunities appear < 5 seconds
+ Toast notifications working
+Phase 4: Extension
+ Auto-fill accuracy > 80%
+ 15+ fields filled
+ Application tracking works
+Phase 5: RAG Chat
+ Semantic search returns relevant results
+ AI responses reference specific opportunities
+ Context-aware recommendations
+Phase 6: Quality
+ All tests passing
+ No critical bugs
+ Performance targets met
+Phase 7: Submission
+ Demo video uploaded
+ Documentation complete
+ Hackathon submitted
+Bismillah. Let's build something extraordinary. 🚀
