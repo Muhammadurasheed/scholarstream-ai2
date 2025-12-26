@@ -178,19 +178,48 @@ async def fetch_intigriti_programs() -> List[Dict[str, Any]]:
 
 
 def transform_intigriti_program(item: Dict[str, Any]) -> Optional[Scholarship]:
+    """
+    Transform Intigriti API program object to Scholarship model.
+    
+    CRITICAL URL FIX (Bismillah):
+    The working Intigriti URL format discovered via Google is:
+        https://app.intigriti.com/programs/{companyHandle}/{programHandle}/detail
+    
+    The API returns:
+    - companyHandle: e.g., "exact"
+    - handle: the FULL program slug, e.g., "exactvulnerabilitydisclosureprogram"
+    
+    Previously we were using `handle` for both parts → "exact/exact" → Forbidden
+    The correct approach: companyHandle + handle (the full program handle)
+    """
     try:
         name = item.get('companyName') or item.get('name')
-        handle = item.get('companyHandle') or item.get('handle')
-        program_handle = item.get('programHandle') or item.get('handle') or handle
+        
+        # CRITICAL: companyHandle is the company's short slug
+        # handle is the FULL program identifier (NOT the same as companyHandle!)
+        company_handle = item.get('companyHandle', '')
+        
+        # The program's unique identifier - this is different from companyHandle
+        # API structure: { companyHandle: "exact", handle: "exactvulnerabilitydisclosureprogram" }
+        program_handle = item.get('handle', '') or item.get('programHandle', '')
+        
+        # Fallback if only handle exists (use it for both)
+        if not company_handle and program_handle:
+            company_handle = program_handle
+        if not program_handle and company_handle:
+            program_handle = company_handle
         
         if not name:
             return None
         
-        # FIX: Use the truly public, shareable program URL.
-        # The app domain often requires a logged-in researcher and returns Forbidden.
-        # Public programs are accessible via:
-        #   https://www.intigriti.com/programs/{companyHandle}/{programHandle}
-        url = f"https://www.intigriti.com/programs/{handle}/{program_handle}"
+        # WORKING URL FORMAT (verified via Google search):
+        # https://app.intigriti.com/programs/{companyHandle}/{programHandle}/detail
+        # Example: https://app.intigriti.com/programs/exact/exactvulnerabilitydisclosureprogram/detail
+        if company_handle and program_handle:
+            url = f"https://app.intigriti.com/programs/{company_handle}/{program_handle}/detail"
+        else:
+            # Fallback to program listing if we can't construct deep link
+            url = "https://app.intigriti.com/programs"
         
         # Max bounty
         amount = 0

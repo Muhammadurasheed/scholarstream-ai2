@@ -247,14 +247,18 @@ export const normalizeApplyUrl = (url: string | undefined): string => {
     }
 
     // -------------------------
+    // -------------------------
     // Superteam Earn
     // -------------------------
+    // FIXED: The working URL format is /listings/{slug}/ (with trailing slash)
+    // Both /bounties/{slug} and /listings/{slug} without trailing slash can 404
     if (hostname === 'earn.superteam.fun') {
-      // If we stored /listings/<slug>, try the /bounties/<slug> route which is commonly used for bounty pages.
-      const m = pathname.match(/^\/listings\/([^\/]+)\/?$/i);
-      if (m?.[1]) {
-        const slug = m[1];
-        return `https://earn.superteam.fun/bounties/${slug}`;
+      // Normalize any Superteam URL to /listings/{slug}/ format
+      const m = pathname.match(/^\/(listings|bounties|projects)\/([^\/]+)\/?$/i);
+      if (m?.[2]) {
+        const slug = m[2];
+        // Always use /listings/ with trailing slash - this is the canonical format
+        return `https://earn.superteam.fun/listings/${slug}/`;
       }
       return urlString;
     }
@@ -262,19 +266,21 @@ export const normalizeApplyUrl = (url: string | undefined): string => {
     // -------------------------
     // Intigriti
     // -------------------------
-    // app.intigriti.com program pages are frequently auth-gated (Forbidden) for non-logged-in users.
-    // Intigriti's publicly shareable program links live on the marketing site:
-    //   https://www.intigriti.com/programs/<company>/<program>
-    if (hostname === 'app.intigriti.com' || hostname === 'intigriti.com') {
+    // FIXED: The working URL format discovered via Google search is:
+    //   https://app.intigriti.com/programs/{companyHandle}/{programHandle}/detail
+    // The www.intigriti.com/programs/ URLs often redirect or 404
+    if (hostname === 'app.intigriti.com' || hostname === 'www.intigriti.com' || hostname === 'intigriti.com') {
+      // Match /programs/{company}/{program} with optional /detail suffix
       const m = pathname.match(/^(?:\/researchers)?\/programs\/([^\/]+)\/([^\/]+)(?:\/detail)?\/?$/i);
       if (m?.[1] && m?.[2]) {
         const company = m[1];
         const program = m[2];
-        return `https://www.intigriti.com/programs/${company}/${program}`;
+        // Always use app.intigriti.com with /detail suffix - this is the working format
+        return `https://app.intigriti.com/programs/${company}/${program}/detail`;
       }
 
-      // Fallback to the public program directory if we can't parse a deep link
-      return 'https://www.intigriti.com/programs';
+      // Fallback to the app program directory
+      return 'https://app.intigriti.com/programs';
     }
 
     return urlString;

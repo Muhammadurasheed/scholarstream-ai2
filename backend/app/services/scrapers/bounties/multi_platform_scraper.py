@@ -469,7 +469,20 @@ async def fetch_superteam_bounties() -> List[Dict[str, Any]]:
 
 
 def transform_superteam_bounty(item: Dict[str, Any]) -> Optional[Scholarship]:
-    """Transform Superteam bounty to Scholarship model"""
+    """
+    Transform Superteam bounty to Scholarship model.
+    
+    CRITICAL URL FIX (Bismillah):
+    Superteam Earn uses different URL patterns depending on listing type:
+    - Bounties: /listings/{slug}/
+    - The API may return 'type' field indicating 'bounty', 'project', 'hackathon'
+    - The slug is the URL-safe identifier
+    
+    After research, the canonical URL format that works is:
+        https://earn.superteam.fun/listings/{slug}/
+    
+    NOT /bounties/{slug} which leads to 404 "Nothing Found"
+    """
     try:
         title = item.get('title', '') or item.get('name', '')
         slug = item.get('slug', '') or item.get('id', '')
@@ -478,9 +491,10 @@ def transform_superteam_bounty(item: Dict[str, Any]) -> Optional[Scholarship]:
             return None
 
         # SUPERTEAM URL FIX:
-        # Some historical datasets used /listings/<slug>, but bounty pages commonly resolve under /bounties/<slug>.
-        # Store the public bounty route so "Apply Now" doesn't land on "Nothing Found".
-        url = f"https://earn.superteam.fun/bounties/{slug}" if slug else ''
+        # The WORKING URL format is /listings/{slug}/ (with trailing slash)
+        # NOT /bounties/{slug} which results in 404
+        # Example: https://earn.superteam.fun/listings/create-engaging-content-for-swappa/
+        url = f"https://earn.superteam.fun/listings/{slug}/" if slug else ''
         
         # Parse reward
         amount = 0
@@ -625,6 +639,294 @@ def transform_gitcoin_grant(item: Dict[str, Any]) -> Optional[Scholarship]:
 
 
 # ========================================
+# KAGGLE COMPETITIONS SCRAPER
+# ========================================
+async def fetch_kaggle_competitions() -> List[Dict[str, Any]]:
+    """
+    Fetch active competitions from Kaggle.
+    Kaggle has a public meta API for competition listings.
+    """
+    try:
+        # Kaggle's public competition list API
+        url = "https://www.kaggle.com/api/v1/competitions/list?search=&category=all&sortBy=latestDeadline&page=1&pageSize=50"
+        
+        # Try direct API first (may require no auth for public competitions)
+        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+            response = await client.get(url, headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'application/json'
+            })
+            
+            if response.status_code == 200:
+                data = response.json()
+                competitions = data if isinstance(data, list) else data.get('competitions', [])
+                logger.info("Kaggle API success", count=len(competitions))
+                return competitions
+        
+        # Fallback: Scrape the competitions page
+        logger.info("Kaggle API failed, trying frontend scrape...")
+        html = await crawler_service.fetch_content("https://www.kaggle.com/competitions")
+        
+        if html:
+            import re
+            # Look for __NEXT_DATA__ or window.SSR_DATA patterns
+            match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', html, re.DOTALL)
+            if match:
+                try:
+                    data = json.loads(match.group(1))
+                    # Navigate to competitions data
+                    competitions = data.get('props', {}).get('pageProps', {}).get('competitions', [])
+                    if competitions:
+                        logger.info("Kaggle frontend scrape success", count=len(competitions))
+                        return competitions
+                except:
+                    pass
+                    
+    except Exception as e:
+        logger.warning("Kaggle fetch failed", error=str(e))
+    
+    # Static fallback with popular ongoing competitions
+    return get_static_kaggle_competitions()
+
+
+def get_static_kaggle_competitions() -> List[Dict[str, Any]]:
+    """Static fallback for Kaggle when API/scraping fails"""
+    return [
+        {
+            "title": "Titanic - Machine Learning from Disaster",
+            "url": "https://www.kaggle.com/c/titanic",
+            "deadline": None,
+            "reward": "Knowledge",
+            "category": "Getting Started"
+        },
+        {
+            "title": "House Prices - Advanced Regression Techniques",
+            "url": "https://www.kaggle.com/c/house-prices-advanced-regression-techniques",
+            "deadline": None,
+            "reward": "Knowledge",
+            "category": "Getting Started"
+        },
+        {
+            "title": "Digit Recognizer",
+            "url": "https://www.kaggle.com/c/digit-recognizer",
+            "deadline": None,
+            "reward": "Knowledge",
+            "category": "Getting Started"
+        }
+    ]
+
+
+def transform_kaggle_competition(item: Dict[str, Any]) -> Optional[Scholarship]:
+    """Transform Kaggle competition to Scholarship model"""
+    try:
+        title = item.get('title') or item.get('competitionTitle') or item.get('name', '')
+        
+        if not title:
+            return None
+        
+        # URL construction
+        slug = item.get('ref') or item.get('slug') or item.get('url', '')
+        if slug and not slug.startswith('http'):
+            url = f"https://www.kaggle.com/c/{slug}" if not slug.startswith('/') else f"https://www.kaggle.com{slug}"
+        else:
+            url = slug or f"https://www.kaggle.com/competitions"
+        
+        # Parse reward
+        amount = 0
+        reward = item.get('reward') or item.get('prize') or item.get('totalPrize', 'Knowledge')
+        if isinstance(reward, str):
+            # Clean "$50,000" → 50000
+            import re
+            match = re.search(r'[\$€]?([\d,]+)', reward.replace(',', ''))
+            if match:
+                try:
+                    amount = int(match.group(1))
+                except:
+                    pass
+        elif isinstance(reward, (int, float)):
+            amount = int(reward)
+        
+        amount_display = f"${amount:,}" if amount > 0 else str(reward)
+        
+        # Parse deadline
+        deadline = None
+        deadline_timestamp = None
+        deadline_str = item.get('deadline') or item.get('mergingDeadline')
+        if deadline_str:
+            try:
+                deadline_dt = datetime.fromisoformat(str(deadline_str).replace('Z', '+00:00'))
+                deadline = deadline_dt.strftime('%Y-%m-%d')
+                deadline_timestamp = int(deadline_dt.timestamp())
+            except:
+                pass
+        
+        opportunity_data = {
+            'id': '',
+            'name': title,
+            'title': title,
+            'organization': 'Kaggle',
+            'amount': amount,
+            'amount_display': amount_display,
+            'deadline': deadline,
+            'deadline_timestamp': deadline_timestamp,
+            'source_url': url,
+            'description': item.get('description', '')[:500] if item.get('description') else f"Kaggle competition: {title}",
+            'tags': ['Competition', 'Kaggle', 'Machine Learning', 'Data Science'],
+            'geo_tags': ['Global', 'Online'],
+            'type_tags': ['Competition'],
+            'eligibility': {
+                'gpa_min': None,
+                'majors': [],
+                'states': [],
+                'citizenship': 'any',
+                'grade_levels': []
+            },
+            'eligibility_text': 'Open to data scientists and ML practitioners globally',
+            'source_type': 'kaggle',
+            'match_score': 50,
+            'match_tier': 'Good',
+            'verified': True,
+            'last_verified': datetime.now().isoformat(),
+            'priority_level': 'HIGH' if amount >= 10000 else 'MEDIUM'
+        }
+        
+        opportunity_data['id'] = generate_opportunity_id(opportunity_data)
+        return Scholarship(**opportunity_data)
+        
+    except Exception as e:
+        logger.warning("Kaggle transform failed", error=str(e))
+        return None
+
+
+# ========================================
+# LEETCODE CONTESTS SCRAPER
+# ========================================
+async def fetch_leetcode_contests() -> List[Dict[str, Any]]:
+    """
+    Fetch upcoming LeetCode contests.
+    LeetCode has a GraphQL API for contest listings.
+    """
+    try:
+        # LeetCode GraphQL endpoint
+        url = "https://leetcode.com/graphql"
+        
+        query = """
+        query {
+            allContests {
+                title
+                titleSlug
+                startTime
+                duration
+                description
+            }
+        }
+        """
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                url,
+                json={"query": query},
+                headers={
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                contests = data.get('data', {}).get('allContests', [])
+                # Filter to upcoming contests only
+                now = datetime.now().timestamp()
+                upcoming = [c for c in contests if c.get('startTime', 0) > now]
+                logger.info("LeetCode API success", count=len(upcoming))
+                return upcoming[:20]  # Limit to 20 upcoming
+                
+    except Exception as e:
+        logger.warning("LeetCode fetch failed", error=str(e))
+    
+    return get_static_leetcode_contests()
+
+
+def get_static_leetcode_contests() -> List[Dict[str, Any]]:
+    """Static fallback for LeetCode contests"""
+    return [
+        {
+            "title": "Weekly Contest",
+            "titleSlug": "weekly-contest",
+            "description": "Weekly LeetCode programming contest",
+            "recurring": True
+        },
+        {
+            "title": "Biweekly Contest",
+            "titleSlug": "biweekly-contest",
+            "description": "Biweekly LeetCode programming contest",
+            "recurring": True
+        }
+    ]
+
+
+def transform_leetcode_contest(item: Dict[str, Any]) -> Optional[Scholarship]:
+    """Transform LeetCode contest to Scholarship model"""
+    try:
+        title = item.get('title', '')
+        slug = item.get('titleSlug', '')
+        
+        if not title:
+            return None
+        
+        url = f"https://leetcode.com/contest/{slug}/" if slug else "https://leetcode.com/contest/"
+        
+        # Parse start time as deadline
+        deadline = None
+        deadline_timestamp = None
+        start_time = item.get('startTime')
+        if start_time:
+            try:
+                deadline_dt = datetime.fromtimestamp(start_time)
+                deadline = deadline_dt.strftime('%Y-%m-%d %H:%M')
+                deadline_timestamp = int(start_time)
+            except:
+                pass
+        
+        opportunity_data = {
+            'id': '',
+            'name': title,
+            'title': title,
+            'organization': 'LeetCode',
+            'amount': 0,
+            'amount_display': 'Prizes + Rankings',
+            'deadline': deadline,
+            'deadline_timestamp': deadline_timestamp,
+            'source_url': url,
+            'description': item.get('description', '') or f"Compete in {title} on LeetCode. Improve your ranking and problem-solving skills.",
+            'tags': ['Contest', 'LeetCode', 'Competitive Programming', 'Algorithms'],
+            'geo_tags': ['Global', 'Online'],
+            'type_tags': ['Competition'],
+            'eligibility': {
+                'gpa_min': None,
+                'majors': [],
+                'states': [],
+                'citizenship': 'any',
+                'grade_levels': []
+            },
+            'eligibility_text': 'Open to all programmers globally',
+            'source_type': 'leetcode',
+            'match_score': 50,
+            'match_tier': 'Good',
+            'verified': True,
+            'last_verified': datetime.now().isoformat(),
+            'priority_level': 'MEDIUM'
+        }
+        
+        opportunity_data['id'] = generate_opportunity_id(opportunity_data)
+        return Scholarship(**opportunity_data)
+        
+    except Exception as e:
+        logger.warning("LeetCode transform failed", error=str(e))
+        return None
+
+
+# ========================================
 # MASTER SCRAPER FUNCTION
 # ========================================
 async def scrape_all_platforms() -> Dict[str, int]:
@@ -638,6 +940,8 @@ async def scrape_all_platforms() -> Dict[str, int]:
         'immunefi': 0,
         'superteam': 0,
         'gitcoin': 0,
+        'kaggle': 0,
+        'leetcode': 0,
         'total': 0
     }
     
@@ -703,6 +1007,28 @@ async def scrape_all_platforms() -> Dict[str, int]:
                 results['gitcoin'] += 1
     except Exception as e:
         logger.warning("Gitcoin scrape error", error=str(e))
+    
+    # Kaggle Competitions
+    try:
+        kaggle_competitions = await fetch_kaggle_competitions()
+        for item in kaggle_competitions:
+            s = transform_kaggle_competition(item)
+            if s:
+                all_scholarships.append(s)
+                results['kaggle'] += 1
+    except Exception as e:
+        logger.warning("Kaggle scrape error", error=str(e))
+    
+    # LeetCode Contests
+    try:
+        leetcode_contests = await fetch_leetcode_contests()
+        for item in leetcode_contests:
+            s = transform_leetcode_contest(item)
+            if s:
+                all_scholarships.append(s)
+                results['leetcode'] += 1
+    except Exception as e:
+        logger.warning("LeetCode scrape error", error=str(e))
     
     results['total'] = len(all_scholarships)
     logger.info("Multi-platform scrape complete", **results)
