@@ -83,12 +83,7 @@ async def fetch_taikai_events() -> List[Dict[str, Any]]:
     # Deduplicate by slug
     unique_events = {e.get('slug', e.get('name', '')): e for e in all_events if e.get('slug') or e.get('name')}
     
-    if unique_events:
-        return list(unique_events.values())
-    
-    # Final fallback: Static data
-    logger.info("TAIKAI dynamic scraping failed, using static data")
-    return get_static_taikai_events()
+    return list(unique_events.values())
 
 
 async def fetch_taikai_graphql() -> List[Dict[str, Any]]:
@@ -307,35 +302,6 @@ def parse_taikai_html(html: str) -> List[Dict[str, Any]]:
     except Exception as e:
         logger.debug("TAIKAI HTML parsing failed", error=str(e))
         return []
-
-
-def get_static_taikai_events() -> List[Dict[str, Any]]:
-    """
-    Static fallback data for known TAIKAI hackathons.
-    """
-    return [
-        {
-            "name": "TAIKAI Web3 Innovation Challenge",
-            "slug": "web3-innovation",
-            "prizePool": "$10,000",
-            "organization": {"name": "TAIKAI", "slug": "taikai"},
-            "type": "Online"
-        },
-        {
-            "name": "Blockchain for Good Hackathon",
-            "slug": "blockchain-for-good",
-            "prizePool": "$25,000",
-            "organization": {"name": "TAIKAI", "slug": "taikai"},
-            "type": "Online"
-        },
-        {
-            "name": "DeFi Developer Challenge",
-            "slug": "defi-developer-challenge",
-            "prizePool": "$15,000",
-            "organization": {"name": "TAIKAI", "slug": "taikai"},
-            "type": "Online"
-        }
-    ]
 
 
 def transform_taikai_event(event: Dict[str, Any]) -> Optional[Scholarship]:
