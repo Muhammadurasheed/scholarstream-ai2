@@ -247,18 +247,19 @@ export const normalizeApplyUrl = (url: string | undefined): string => {
     }
 
     // -------------------------
-    // -------------------------
     // Superteam Earn
     // -------------------------
-    // FIXED: The working URL format is /listings/{slug}/ (with trailing slash)
-    // Both /bounties/{slug} and /listings/{slug} without trailing slash can 404
+    // CRITICAL FIX (Alhamdulillah):
+    // BROKEN: /listings/{slug}/ or /listings/{slug} (404 "Nothing Found")
+    // WORKS:  /listing/{slug}  (SINGULAR, no trailing slash!)
+    // The canonical public URL is: https://earn.superteam.fun/listing/{slug}
     if (hostname === 'earn.superteam.fun') {
-      // Normalize any Superteam URL to /listings/{slug}/ format
-      const m = pathname.match(/^\/(listings|bounties|projects)\/([^\/]+)\/?$/i);
+      // Match any variant: /listings/, /listing/, /bounties/, /projects/
+      const m = pathname.match(/^\/(listings?|bounties|projects)\/([^\/]+)\/?$/i);
       if (m?.[2]) {
         const slug = m[2];
-        // Always use /listings/ with trailing slash - this is the canonical format
-        return `https://earn.superteam.fun/listings/${slug}/`;
+        // ALWAYS use /listing/ (SINGULAR) without trailing slash
+        return `https://earn.superteam.fun/listing/${slug}`;
       }
       return urlString;
     }

@@ -217,36 +217,66 @@ def transform_dorahacks_hackathon(item: Dict[str, Any]) -> Optional[Scholarship]
         url = f"https://dorahacks.io/hackathon/{slug}"
         
         # Parse prize (DoraHacks fields vary across endpoints/versions)
+        # ENHANCED: More aggressive prize extraction from all possible fields
         def _parse_amount(value: Any) -> int:
             try:
                 if value is None:
                     return 0
                 if isinstance(value, (int, float)):
-                    return int(value)
+                    return int(value) if value > 0 else 0
                 if isinstance(value, dict):
-                    # Common shapes: {amount: 10000} or {value: 10000}
-                    return _parse_amount(value.get('amount') or value.get('value') or value.get('max') or 0)
+                    # Try many possible keys in dict
+                    for key in ['amount', 'value', 'max', 'total', 'usd', 'usdc', 'prize']:
+                        if key in value:
+                            result = _parse_amount(value[key])
+                            if result > 0:
+                                return result
+                    # Sum all numeric values in dict as fallback
+                    total = 0
+                    for v in value.values():
+                        if isinstance(v, (int, float)) and v > 0:
+                            total += int(v)
+                    return total
                 if isinstance(value, list) and value:
-                    # Sometimes prizes are arrays of tiers
-                    return max((_parse_amount(v) for v in value), default=0)
-                s = str(value)
+                    # Sum prizes from array of tiers/prizes
+                    return sum((_parse_amount(v) for v in value), 0)
+                s = str(value).replace('$', '').replace(',', '').strip()
                 import re
-                m = re.search(r"([\d,]+)", s)
-                return int(m.group(1).replace(',', '')) if m else 0
+                # Match numbers with optional K/M suffix
+                m = re.search(r"([\d.]+)\s*([KkMm])?", s)
+                if m:
+                    num = float(m.group(1))
+                    suffix = (m.group(2) or '').upper()
+                    if suffix == 'K':
+                        num *= 1000
+                    elif suffix == 'M':
+                        num *= 1000000
+                    return int(num)
+                return 0
             except Exception:
                 return 0
 
-        raw_prize = (
-            item.get('totalPrize')
-            or item.get('total_prize')
-            or item.get('prizePool')
-            or item.get('prize_pool')
-            or item.get('reward')
-            or item.get('rewards')
-            or item.get('prize')
-            or 0
-        )
-        amount = _parse_amount(raw_prize)
+        # Try ALL possible prize fields aggressively
+        amount = 0
+        for field in ['totalPrize', 'total_prize', 'prizePool', 'prize_pool', 
+                      'reward', 'rewards', 'prize', 'bounty', 'totalReward',
+                      'total_reward', 'prizeAmount', 'prize_amount', 'bonus',
+                      'maxPrize', 'max_prize', 'totalBounty', 'prizeMoney']:
+            raw = item.get(field)
+            if raw:
+                parsed = _parse_amount(raw)
+                if parsed > amount:
+                    amount = parsed
+        
+        # Also check nested 'prize' or 'rewards' objects
+        if amount == 0:
+            prize_obj = item.get('prize') or item.get('rewards') or item.get('prizeInfo') or {}
+            if isinstance(prize_obj, dict):
+                for key in ['total', 'amount', 'usd', 'value', 'max']:
+                    if key in prize_obj:
+                        parsed = _parse_amount(prize_obj[key])
+                        if parsed > amount:
+                            amount = parsed
 
         prize_unit = item.get('prizeUnit', 'USD')
         amount_display = f"${amount:,}" if (prize_unit or '').upper() == 'USD' and amount > 0 else (item.get('totalPrizeText') or item.get('prizePool') or (f"{amount:,} {prize_unit}" if amount > 0 else "Varies"))
@@ -496,16 +526,16 @@ def transform_superteam_bounty(item: Dict[str, Any]) -> Optional[Scholarship]:
     """
     Transform Superteam bounty to Scholarship model.
     
-    CRITICAL URL FIX (Bismillah):
-    Superteam Earn uses different URL patterns depending on listing type:
-    - Bounties: /listings/{slug}/
-    - The API may return 'type' field indicating 'bounty', 'project', 'hackathon'
-    - The slug is the URL-safe identifier
+    CRITICAL URL FIX (Bismillah, Alhamdulillah):
+    After careful research based on user screenshots:
     
-    After research, the canonical URL format that works is:
-        https://earn.superteam.fun/listings/{slug}/
+    BROKEN: https://earn.superteam.fun/listings/{slug}/  (404 "Nothing Found")
+    WORKS:  https://earn.superteam.fun/listing/{slug}    (SINGULAR, no trailing slash!)
     
-    NOT /bounties/{slug} which leads to 404 "Nothing Found"
+    The canonical public-facing URL is:
+        https://earn.superteam.fun/listing/{slug}
+    
+    Note: "listing" is SINGULAR, NOT "listings" (plural)!
     """
     try:
         title = item.get('title', '') or item.get('name', '')
@@ -515,22 +545,25 @@ def transform_superteam_bounty(item: Dict[str, Any]) -> Optional[Scholarship]:
         slug = item.get('slug', '') or item.get('listingSlug', '') or item.get('titleSlug', '')
 
         if not slug and raw_url:
-            # Extract slug from URLs like /listings/<slug> or /bounties/<slug>
+            # Extract slug from URLs like /listings/<slug>, /listing/<slug>, /bounties/<slug>
             import re
-            m = re.search(r"/((?:listings|bounties|projects))/([^/]+)/?", str(raw_url))
+            m = re.search(r"/((?:listings?|bounties|projects))/([^/]+)/?", str(raw_url))
             if m:
                 slug = m.group(2)
 
         if not title:
             return None
 
-        if raw_url and str(raw_url).startswith('http'):
-            url = str(raw_url)
+        # CRITICAL: The canonical working URL format is /listing/{slug} (SINGULAR!)
+        # NOT /listings/{slug} which leads to 404 "Nothing Found"
+        if slug:
+            url = f"https://earn.superteam.fun/listing/{slug}"
+        elif raw_url and str(raw_url).startswith('http'):
+            # Normalize any existing URL to the correct format
+            url = str(raw_url).replace('/listings/', '/listing/').replace('/bounties/', '/listing/').rstrip('/')
         elif raw_url and str(raw_url).startswith('/'):
-            url = f"https://earn.superteam.fun{raw_url}"
-        elif slug:
-            # Canonical listing URL (works for most)
-            url = f"https://earn.superteam.fun/listings/{slug}/"
+            path = str(raw_url).replace('/listings/', '/listing/').replace('/bounties/', '/listing/').rstrip('/')
+            url = f"https://earn.superteam.fun{path}"
         else:
             # No reliable URL → omit link (better than broken 404)
             url = ''
