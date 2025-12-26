@@ -216,16 +216,40 @@ def transform_dorahacks_hackathon(item: Dict[str, Any]) -> Optional[Scholarship]
         
         url = f"https://dorahacks.io/hackathon/{slug}"
         
-        # Parse prize
-        amount = 0
-        prize_str = item.get('totalPrize', '0')
-        try:
-            amount = int(float(str(prize_str).replace(',', '')))
-        except:
-            pass
-        
+        # Parse prize (DoraHacks fields vary across endpoints/versions)
+        def _parse_amount(value: Any) -> int:
+            try:
+                if value is None:
+                    return 0
+                if isinstance(value, (int, float)):
+                    return int(value)
+                if isinstance(value, dict):
+                    # Common shapes: {amount: 10000} or {value: 10000}
+                    return _parse_amount(value.get('amount') or value.get('value') or value.get('max') or 0)
+                if isinstance(value, list) and value:
+                    # Sometimes prizes are arrays of tiers
+                    return max((_parse_amount(v) for v in value), default=0)
+                s = str(value)
+                import re
+                m = re.search(r"([\d,]+)", s)
+                return int(m.group(1).replace(',', '')) if m else 0
+            except Exception:
+                return 0
+
+        raw_prize = (
+            item.get('totalPrize')
+            or item.get('total_prize')
+            or item.get('prizePool')
+            or item.get('prize_pool')
+            or item.get('reward')
+            or item.get('rewards')
+            or item.get('prize')
+            or 0
+        )
+        amount = _parse_amount(raw_prize)
+
         prize_unit = item.get('prizeUnit', 'USD')
-        amount_display = f"${amount:,}" if prize_unit == 'USD' else f"{amount:,} {prize_unit}"
+        amount_display = f"${amount:,}" if (prize_unit or '').upper() == 'USD' and amount > 0 else (item.get('totalPrizeText') or item.get('prizePool') or (f"{amount:,} {prize_unit}" if amount > 0 else "Varies"))
         
         # Parse deadline
         deadline = None
@@ -485,16 +509,31 @@ def transform_superteam_bounty(item: Dict[str, Any]) -> Optional[Scholarship]:
     """
     try:
         title = item.get('title', '') or item.get('name', '')
-        slug = item.get('slug', '') or item.get('id', '')
+
+        # Prefer canonical URL if the API provides one
+        raw_url = item.get('url') or item.get('link') or ''
+        slug = item.get('slug', '') or item.get('listingSlug', '') or item.get('titleSlug', '')
+
+        if not slug and raw_url:
+            # Extract slug from URLs like /listings/<slug> or /bounties/<slug>
+            import re
+            m = re.search(r"/((?:listings|bounties|projects))/([^/]+)/?", str(raw_url))
+            if m:
+                slug = m.group(2)
 
         if not title:
             return None
 
-        # SUPERTEAM URL FIX:
-        # The WORKING URL format is /listings/{slug}/ (with trailing slash)
-        # NOT /bounties/{slug} which results in 404
-        # Example: https://earn.superteam.fun/listings/create-engaging-content-for-swappa/
-        url = f"https://earn.superteam.fun/listings/{slug}/" if slug else ''
+        if raw_url and str(raw_url).startswith('http'):
+            url = str(raw_url)
+        elif raw_url and str(raw_url).startswith('/'):
+            url = f"https://earn.superteam.fun{raw_url}"
+        elif slug:
+            # Canonical listing URL (works for most)
+            url = f"https://earn.superteam.fun/listings/{slug}/"
+        else:
+            # No reliable URL → omit link (better than broken 404)
+            url = ''
         
         # Parse reward
         amount = 0

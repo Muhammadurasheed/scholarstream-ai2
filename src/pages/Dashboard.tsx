@@ -20,7 +20,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useScholarships } from '@/hooks/useScholarships';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatCurrency, calculateDaysUntilDeadline } from '@/utils/scholarshipUtils';
+import { formatCurrency, calculateDaysUntilDeadline, isNewScholarship } from '@/utils/scholarshipUtils';
 import { UserProfile } from '@/types/scholarship';
 import { matchingEngine } from '@/services/matchingEngine';
 import { useRealtimeOpportunities } from '@/hooks/useRealtimeOpportunities';
@@ -309,6 +309,18 @@ const Dashboard = () => {
       seenIds.add(opp.id);
       seenTitles.add(normalizedTitle);
       return true;
+    });
+
+    // 6. Boost: surface newly discovered opportunities first
+    // (Keeps relevance ordering largely intact but ensures fresh items show up immediately.)
+    filtered = [...filtered].sort((a, b) => {
+      const aNew = isNewScholarship(a.discovered_at) ? 1 : 0;
+      const bNew = isNewScholarship(b.discovered_at) ? 1 : 0;
+      if (aNew !== bNew) return bNew - aNew;
+
+      const aT = new Date(a.discovered_at).getTime();
+      const bT = new Date(b.discovered_at).getTime();
+      return (isNaN(bT) ? 0 : bT) - (isNaN(aT) ? 0 : aT);
     });
 
     // Categorize by inferred type

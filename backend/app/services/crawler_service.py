@@ -23,27 +23,56 @@ class UniversalCrawlerService:
         self.kafka_initialized = kafka_producer_manager.initialize()
         self.browser = None
         self.playwright = None
-        
+        # Prevent concurrent initialization races (multiple scrapers booting at once)
+        self._browser_lock = asyncio.Lock()
+
     async def _init_browser(self):
-        """Initialize Playwright Engine if not running"""
-        if not self.playwright:
-            self.playwright = await async_playwright().start()
-            # Launch in Headless mode (but defined as non-headless to anti-bots)
-            self.browser = await self.playwright.chromium.launch(
-                headless=True,
-                args=[
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-blink-features=AutomationControlled',
-                    '--disable-infobars',
-                    '--window-size=1920,1080',
-                ]
-            )
+        """Initialize Playwright Engine if not running (race-safe)"""
+        # Fast path: already initialized
+        if self.playwright and self.browser:
+            return
+
+        async with self._browser_lock:
+            # Re-check after acquiring lock
+            if self.playwright and self.browser:
+                return
+
+            try:
+                if not self.playwright:
+                    self.playwright = await async_playwright().start()
+
+                # Launch Chromium (headless, but with anti-bot flags)
+                self.browser = await self.playwright.chromium.launch(
+                    headless=True,
+                    args=[
+                        '--no-sandbox',
+                        '--disable-setuid-sandbox',
+                        '--disable-blink-features=AutomationControlled',
+                        '--disable-infobars',
+                        '--window-size=1920,1080',
+                    ],
+                )
+            except Exception:
+                # Reset state so future attempts can retry cleanly
+                try:
+                    if self.browser:
+                        await self.browser.close()
+                except Exception:
+                    pass
+                try:
+                    if self.playwright:
+                        await self.playwright.stop()
+                except Exception:
+                    pass
+                self.browser = None
+                self.playwright = None
+                raise
             
     async def create_stealth_context(self) -> BrowserContext:
         """Create a new incognito context with advanced stealth overrides"""
         await self._init_browser()
-        
+        if not self.browser:
+            raise RuntimeError("Playwright browser not initialized")
         # Rotate user agents for anti-detection
         user_agents = [
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",

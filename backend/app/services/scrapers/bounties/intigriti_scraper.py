@@ -212,14 +212,15 @@ def transform_intigriti_program(item: Dict[str, Any]) -> Optional[Scholarship]:
         if not name:
             return None
         
-        # WORKING URL FORMAT (verified via Google search):
-        # https://app.intigriti.com/programs/{companyHandle}/{programHandle}/detail
-        # Example: https://app.intigriti.com/programs/exact/exactvulnerabilitydisclosureprogram/detail
+        # PUBLIC URL NOTE:
+        # Some app.intigriti.com program pages are auth-gated (Forbidden) depending on program/user.
+        # The reliably public landing page format is:
+        #   https://www.intigriti.com/programs/{companyHandle}/{programHandle}
         if company_handle and program_handle:
-            url = f"https://app.intigriti.com/programs/{company_handle}/{program_handle}/detail"
+            url = f"https://www.intigriti.com/programs/{company_handle}/{program_handle}"
         else:
-            # Fallback to program listing if we can't construct deep link
-            url = "https://app.intigriti.com/programs"
+            # Fallback to public directory
+            url = "https://www.intigriti.com/programs"
         
         # Max bounty
         amount = 0

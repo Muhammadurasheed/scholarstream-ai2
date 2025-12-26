@@ -266,21 +266,22 @@ export const normalizeApplyUrl = (url: string | undefined): string => {
     // -------------------------
     // Intigriti
     // -------------------------
-    // FIXED: The working URL format discovered via Google search is:
-    //   https://app.intigriti.com/programs/{companyHandle}/{programHandle}/detail
-    // The www.intigriti.com/programs/ URLs often redirect or 404
-    if (hostname === 'app.intigriti.com' || hostname === 'www.intigriti.com' || hostname === 'intigriti.com') {
-      // Match /programs/{company}/{program} with optional /detail suffix
+    // app.intigriti.com program pages can be auth-gated (Forbidden).
+    // Prefer the public marketing URL format:
+    //   https://www.intigriti.com/programs/{company}/{program}
+    if (hostname === 'app.intigriti.com' || hostname === 'intigriti.com') {
       const m = pathname.match(/^(?:\/researchers)?\/programs\/([^\/]+)\/([^\/]+)(?:\/detail)?\/?$/i);
       if (m?.[1] && m?.[2]) {
         const company = m[1];
         const program = m[2];
-        // Always use app.intigriti.com with /detail suffix - this is the working format
-        return `https://app.intigriti.com/programs/${company}/${program}/detail`;
+        return `https://www.intigriti.com/programs/${company}/${program}`;
       }
+      return 'https://www.intigriti.com/programs';
+    }
 
-      // Fallback to the app program directory
-      return 'https://app.intigriti.com/programs';
+    // Keep already-public Intigriti URLs as-is
+    if (hostname === 'www.intigriti.com') {
+      return urlString;
     }
 
     return urlString;
