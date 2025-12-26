@@ -298,38 +298,98 @@ class UniversalCrawlerService:
         from urllib.parse import urlparse
         return urlparse(url).netloc
     
-    async def fetch_content(self, url: str) -> Optional[str]:
+    async def fetch_content(self, url: str, max_retries: int = 3) -> Optional[str]:
         """
         Direct fetch of a single URL using stealth context. 
         Returns HTML content or None on failure.
-        Useful for specific scrapers that need immediate return values.
+        
+        Enhanced with:
+        - Exponential backoff retry logic
+        - Multiple wait strategies for SPAs
+        - Extended timeout for slow sites (MLH, TAIKAI)
         """
-        context = await self.create_stealth_context()
-        page = None
-        try:
-            page = await context.new_page()
-            # Basic route blocking for speed
-            await page.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "media", "font", "stylesheet"] else route.continue_())
-            
-            logger.info("Direct fetch approaching", url=url)
+        last_error = None
+        
+        for attempt in range(max_retries):
+            context = await self.create_stealth_context()
+            page = None
             try:
-                await page.goto(url, wait_until="domcontentloaded", timeout=60000)
-            except:
-                logger.warning("Direct fetch timeout, retrying with fast load", url=url)
-                await page.goto(url, wait_until="load", timeout=30000)
+                page = await context.new_page()
+                
+                # Basic route blocking for speed (allow JSON API responses)
+                async def route_handler(route):
+                    if route.request.resource_type in ["image", "media", "font", "stylesheet"]:
+                        await route.abort()
+                    else:
+                        await route.continue_()
+                        
+                await page.route("**/*", route_handler)
+                
+                logger.info("Direct fetch approaching", url=url, attempt=attempt + 1)
+                
+                # Try multiple loading strategies
+                loaded = False
+                
+                # Strategy 1: domcontentloaded (fast, good for SPAs)
+                try:
+                    await page.goto(url, wait_until="domcontentloaded", timeout=45000)
+                    loaded = True
+                except Exception as e1:
+                    logger.debug("domcontentloaded failed, trying networkidle", url=url, error=str(e1)[:50])
+                    
+                    # Strategy 2: networkidle (slower but more complete for SPAs)
+                    try:
+                        await page.goto(url, wait_until="networkidle", timeout=60000)
+                        loaded = True
+                    except Exception as e2:
+                        logger.debug("networkidle failed, trying commit", url=url, error=str(e2)[:50])
+                        
+                        # Strategy 3: commit (minimal, just wait for first response)
+                        try:
+                            await page.goto(url, wait_until="commit", timeout=30000)
+                            loaded = True
+                        except Exception as e3:
+                            last_error = e3
+                            logger.warning("All load strategies failed", url=url, attempt=attempt + 1)
+                            
+                if not loaded:
+                    continue  # Retry with fresh context
+                
+                # Wait for dynamic content to render (SPAs like DoraHacks, TAIKAI)
+                await asyncio.sleep(3)
+                
+                # Additional wait for specific slow sites
+                if any(domain in url for domain in ['taikai.network', 'mlh.io', 'hackquest.io', 'dorahacks.io']):
+                    await asyncio.sleep(2)  # Extra 2s for these slow SPAs
+                
+                content = await page.content()
+                
+                # Validate content isn't empty/shell
+                if len(content) > 1000:
+                    return content
+                else:
+                    logger.warning("Content too thin, retrying", url=url, length=len(content))
+                    
+            except Exception as e:
+                last_error = e
+                logger.warning("Direct fetch attempt failed", url=url, attempt=attempt + 1, error=str(e)[:100])
+            finally:
+                if page: 
+                    try:
+                        await page.close()
+                    except:
+                        pass
+                try:
+                    await context.close()
+                except:
+                    pass
             
-            # Small wiggle/wait
-            await asyncio.sleep(2)
-            
-            content = await page.content()
-            return content
-            
-        except Exception as e:
-            logger.error("Direct fetch failed", url=url, error=str(e))
-            return None
-        finally:
-            if page: await page.close()
-            await context.close()
+            # Exponential backoff between retries
+            if attempt < max_retries - 1:
+                await asyncio.sleep(2 ** attempt)
+        
+        logger.error("Direct fetch failed after all retries", url=url, error=str(last_error) if last_error else "Unknown")
+        return None
 
     async def close(self):
         if self.browser:
