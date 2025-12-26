@@ -419,11 +419,14 @@ def transform_superteam_bounty(item: Dict[str, Any]) -> Optional[Scholarship]:
     try:
         title = item.get('title', '') or item.get('name', '')
         slug = item.get('slug', '') or item.get('id', '')
-        
+
         if not title:
             return None
-        
-        url = f"https://earn.superteam.fun/listings/{slug}" if slug else ''
+
+        # SUPERTEAM URL FIX:
+        # Some historical datasets used /listings/<slug>, but bounty pages commonly resolve under /bounties/<slug>.
+        # Store the public bounty route so "Apply Now" doesn't land on "Nothing Found".
+        url = f"https://earn.superteam.fun/bounties/{slug}" if slug else ''
         
         # Parse reward
         amount = 0

@@ -210,7 +210,12 @@ export const getTimeAgo = (date: string | null | undefined): string => {
 
 /**
  * Normalizes external application URLs to ensure maximum compatibility.
- * FIXED: Converts DevPost subdomains to canonical path format (subdomains break after hackathon ends)
+ * Goal: open the *real* public-facing application page even if stored URLs are stale.
+ *
+ * Fixes covered:
+ * - DevPost: stored path URLs like https://devpost.com/hackathons/<slug>/ are 404; real pages are subdomains.
+ * - Superteam Earn: some datasets store /listings/<slug> but bounties commonly live under /bounties/<slug>.
+ * - Intigriti: app.intigriti.com/programs/.../detail is often auth-gated; public pages are on www.intigriti.com.
  */
 export const normalizeApplyUrl = (url: string | undefined): string => {
   if (!url) return '#';
@@ -220,20 +225,58 @@ export const normalizeApplyUrl = (url: string | undefined): string => {
     if (!urlString.startsWith('http')) return urlString;
 
     const parsed = new URL(urlString);
-    const domain = parsed.hostname.toLowerCase().replace('www.', '');
+    const hostname = parsed.hostname.toLowerCase().replace('www.', '');
+    const pathname = parsed.pathname;
 
-    // CRITICAL FIX: Convert DevPost SUBDOMAINS to canonical path format
-    // Subdomains like "gemini-3-hackathon.devpost.com" break after hackathon ends
-    // Canonical format "devpost.com/hackathons/gemini-3-hackathon/" is permanent
-    if (domain.endsWith('.devpost.com') && domain !== 'devpost.com') {
-      // It's already a subdomain (hackathon page), KEEP IT.
+    // -------------------------
+    // DevPost
+    // -------------------------
+    // Broken: https://devpost.com/hackathons/<slug>/
+    // Working (canonical): https://<slug>.devpost.com/
+    if (hostname === 'devpost.com') {
+      const m = pathname.match(/^\/hackathons\/([^\/]+)\/?$/i);
+      if (m?.[1]) {
+        const slug = m[1];
+        return `https://${slug}.devpost.com/`;
+      }
+    }
+
+    // Keep DevPost subdomain URLs as-is (these are usually the correct landing pages).
+    if (hostname.endsWith('.devpost.com') || hostname === 'devpost.com') {
       return urlString;
     }
 
-    // If already in canonical format (devpost.com/hackathons/...), keep it as is
-    // This is the stable, permanent URL format
+    // -------------------------
+    // Superteam Earn
+    // -------------------------
+    if (hostname === 'earn.superteam.fun') {
+      // If we stored /listings/<slug>, try the /bounties/<slug> route which is commonly used for bounty pages.
+      const m = pathname.match(/^\/listings\/([^\/]+)\/?$/i);
+      if (m?.[1]) {
+        const slug = m[1];
+        return `https://earn.superteam.fun/bounties/${slug}`;
+      }
+      return urlString;
+    }
+
+    // -------------------------
+    // Intigriti
+    // -------------------------
+    // Broken/auth-gated: https://app.intigriti.com/programs/<company>/<program>/detail
+    // Public:           https://www.intigriti.com/programs/<company>/<program>
+    if (hostname === 'app.intigriti.com') {
+      const m = pathname.match(/^\/programs\/([^\/]+)\/([^\/]+)(?:\/detail)?\/?$/i);
+      if (m?.[1] && m?.[2]) {
+        const company = m[1];
+        const program = m[2];
+        return `https://www.intigriti.com/programs/${company}/${program}`;
+      }
+      return urlString;
+    }
+
     return urlString;
   } catch {
     return url || '#';
   }
 };
+

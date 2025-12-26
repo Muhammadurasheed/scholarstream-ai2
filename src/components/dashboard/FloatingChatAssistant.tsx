@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Scholarship } from '@/types/scholarship';
+import { normalizeApplyUrl } from '@/utils/scholarshipUtils';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
@@ -356,7 +357,11 @@ export const FloatingChatAssistant = () => {
                           <Button
                             size="sm"
                             className="flex-1 h-7 text-xs"
-                            onClick={() => opp.source_url ? window.open(opp.source_url, '_blank') : navigate(`/opportunity/${opp.id}`)}
+                            onClick={() =>
+                              opp.source_url
+                                ? window.open(normalizeApplyUrl(opp.source_url), '_blank', 'noopener,noreferrer')
+                                : navigate(`/opportunity/${opp.id}`)
+                            }
                           >
                             Apply
                           </Button>
