@@ -262,20 +262,19 @@ export const normalizeApplyUrl = (url: string | undefined): string => {
     // -------------------------
     // Intigriti
     // -------------------------
-    // Broken / not-found examples we've seen:
-    // - https://www.intigriti.com/researchers/programs/<company>/<program>/detail
-    // - https://app.intigriti.com/programs/<company>/<program>/detail
-    // Working canonical program page:
-    // - https://app.intigriti.com/programs/<company>/<program>
+    // app.intigriti.com program pages are frequently auth-gated (Forbidden) for non-logged-in users.
+    // Intigriti's publicly shareable program links live on the marketing site:
+    //   https://www.intigriti.com/programs/<company>/<program>
     if (hostname === 'app.intigriti.com' || hostname === 'intigriti.com') {
-      // Accept both the marketing-site and app-site path variants and normalize to app.
       const m = pathname.match(/^(?:\/researchers)?\/programs\/([^\/]+)\/([^\/]+)(?:\/detail)?\/?$/i);
       if (m?.[1] && m?.[2]) {
         const company = m[1];
         const program = m[2];
-        return `https://app.intigriti.com/programs/${company}/${program}`;
+        return `https://www.intigriti.com/programs/${company}/${program}`;
       }
-      return urlString;
+
+      // Fallback to the public program directory if we can't parse a deep link
+      return 'https://www.intigriti.com/programs';
     }
 
     return urlString;
