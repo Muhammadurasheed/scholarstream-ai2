@@ -32,17 +32,41 @@ class AIEnrichmentService:
         if not html_content: return ""
         try:
             soup = BeautifulSoup(html_content, 'html.parser')
-            # Decompose heavy tags
-            for tag in soup(['script', 'style', 'svg', 'path', 'noscript', 'meta', 'link', 'iframe', 'footer', 'nav']):
+
+            # Decompose heavy tags, but PRESERVE hydration JSON for SPAs.
+            # Many of our targets (DoraHacks, HackQuest, TAIKAI, Superteam) are Next.js/SPAs where
+            # the opportunity data lives inside <script id="__NEXT_DATA__" type="application/json">...</script>.
+            # If we delete all scripts we destroy the only structured data on the page.
+            for tag in soup(['style', 'svg', 'path', 'noscript', 'meta', 'link', 'iframe', 'footer', 'nav']):
                 tag.decompose()
-            
+
+            # Remove scripts except allowlisted ones (__NEXT_DATA__, ld+json, and common SPA hydration blobs)
+            for script in soup.find_all('script'):
+                sid = (script.get('id') or '').strip()
+                stype = (script.get('type') or '').strip().lower()
+                keep = False
+
+                if sid == '__NEXT_DATA__':
+                    keep = True
+                elif stype in ['application/ld+json', 'application/json']:
+                    # Some sites embed structured data as JSON-LD or app state as application/json.
+                    keep = True
+                else:
+                    # Nuxt hydration (common fallback)
+                    text = (script.string or '')
+                    if 'window.__NUXT__' in text or '__NUXT__' in text:
+                        keep = True
+
+                if not keep:
+                    script.decompose()
+
             body = soup.body
             cleaned = str(body)[:60000] if body else str(soup)[:60000]
-            
+
             # Diagnostic: Log content density
             if len(cleaned) < 500:
                 logger.info("Content density low", length=len(cleaned), url=getattr(self, '_last_url', 'unknown'))
-                
+
             return cleaned
         except Exception as e:
             logger.warning("HTML Clean failed", error=str(e))

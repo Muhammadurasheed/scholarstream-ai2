@@ -186,12 +186,11 @@ def transform_intigriti_program(item: Dict[str, Any]) -> Optional[Scholarship]:
         if not name:
             return None
         
-        # FIX: Use a public, stable program URL.
-        # The marketing site (www.intigriti.com/...) frequently 404s for program detail deep-links.
-        # The canonical, shareable program page lives on the app domain:
-        #   https://app.intigriti.com/programs/{companyHandle}/{programHandle}
-        # (No trailing /detail)
-        url = f"https://app.intigriti.com/programs/{handle}/{program_handle}"
+        # FIX: Use the truly public, shareable program URL.
+        # The app domain often requires a logged-in researcher and returns Forbidden.
+        # Public programs are accessible via:
+        #   https://www.intigriti.com/programs/{companyHandle}/{programHandle}
+        url = f"https://www.intigriti.com/programs/{handle}/{program_handle}"
         
         # Max bounty
         amount = 0
