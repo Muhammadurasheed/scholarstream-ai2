@@ -186,9 +186,12 @@ def transform_intigriti_program(item: Dict[str, Any]) -> Optional[Scholarship]:
         if not name:
             return None
         
-        # FIX: Use the PUBLIC researcher-facing URL format that doesn't require auth
-        # Format: https://www.intigriti.com/researchers/programs/{handle}/{programHandle}/detail
-        url = f"https://www.intigriti.com/researchers/programs/{handle}/{program_handle}/detail"
+        # FIX: Use a public, stable program URL.
+        # The marketing site (www.intigriti.com/...) frequently 404s for program detail deep-links.
+        # The canonical, shareable program page lives on the app domain:
+        #   https://app.intigriti.com/programs/{companyHandle}/{programHandle}
+        # (No trailing /detail)
+        url = f"https://app.intigriti.com/programs/{handle}/{program_handle}"
         
         # Max bounty
         amount = 0

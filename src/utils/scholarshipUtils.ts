@@ -262,15 +262,18 @@ export const normalizeApplyUrl = (url: string | undefined): string => {
     // -------------------------
     // Intigriti
     // -------------------------
-    // Broken/auth-gated: https://app.intigriti.com/programs/<company>/<program>/detail
-    // Public researcher page: https://www.intigriti.com/researchers/programs/<company>/<program>/detail
+    // Broken / not-found examples we've seen:
+    // - https://www.intigriti.com/researchers/programs/<company>/<program>/detail
+    // - https://app.intigriti.com/programs/<company>/<program>/detail
+    // Working canonical program page:
+    // - https://app.intigriti.com/programs/<company>/<program>
     if (hostname === 'app.intigriti.com' || hostname === 'intigriti.com') {
+      // Accept both the marketing-site and app-site path variants and normalize to app.
       const m = pathname.match(/^(?:\/researchers)?\/programs\/([^\/]+)\/([^\/]+)(?:\/detail)?\/?$/i);
       if (m?.[1] && m?.[2]) {
         const company = m[1];
         const program = m[2];
-        // Use the researcher-facing public URL
-        return `https://www.intigriti.com/researchers/programs/${company}/${program}/detail`;
+        return `https://app.intigriti.com/programs/${company}/${program}`;
       }
       return urlString;
     }
