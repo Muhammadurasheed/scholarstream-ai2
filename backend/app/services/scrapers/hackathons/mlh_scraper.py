@@ -76,12 +76,8 @@ async def fetch_mlh_events() -> List[Dict[str, Any]]:
     # Deduplicate by name
     unique_events = {e.get('name', e.get('title', '')): e for e in all_events if e.get('name') or e.get('title')}
     
-    if unique_events:
-        return list(unique_events.values())
-    
-    # Strategy 3: Use static fallback data if all else fails
-    logger.info("MLH dynamic scraping failed, using static event data")
-    return get_static_mlh_events()
+    return list(unique_events.values())
+
 
 
 def parse_mlh_html(html: str) -> List[Dict[str, Any]]:
@@ -145,135 +141,6 @@ def parse_mlh_html(html: str) -> List[Dict[str, Any]]:
     except Exception as e:
         logger.debug("MLH HTML parsing failed", error=str(e))
         return []
-
-
-def get_static_mlh_events() -> List[Dict[str, Any]]:
-    """
-    Static fallback data for MLH 2025/2026 season events.
-    These are well-known recurring MLH hackathons.
-    """
-    return [
-        {
-            "name": "HackMIT 2025",
-            "url": "https://hackmit.org/",
-            "location": "Cambridge, MA",
-            "start_date": "2025-09-13",
-            "end_date": "2025-09-14",
-            "is_online": False
-        },
-        {
-            "name": "HackGT 12",
-            "url": "https://hackgt.org/",
-            "location": "Atlanta, GA",
-            "start_date": "2025-10-04",
-            "end_date": "2025-10-06",
-            "is_online": False
-        },
-        {
-            "name": "PennApps XXV",
-            "url": "https://pennapps.com/",
-            "location": "Philadelphia, PA",
-            "start_date": "2025-09-06",
-            "end_date": "2025-09-08",
-            "is_online": False
-        },
-        {
-            "name": "TreeHacks 2025",
-            "url": "https://www.treehacks.com/",
-            "location": "Stanford, CA",
-            "start_date": "2025-02-14",
-            "end_date": "2025-02-16",
-            "is_online": False
-        },
-        {
-            "name": "HackNYU 2025",
-            "url": "https://hacknyu.org/",
-            "location": "New York, NY",
-            "start_date": "2025-02-21",
-            "end_date": "2025-02-23",
-            "is_online": False
-        },
-        {
-            "name": "CalHacks 11.0",
-            "url": "https://calhacks.io/",
-            "location": "Berkeley, CA",
-            "start_date": "2025-10-18",
-            "end_date": "2025-10-20",
-            "is_online": False
-        },
-        {
-            "name": "HackTX 2025",
-            "url": "https://hacktx.com/",
-            "location": "Austin, TX",
-            "start_date": "2025-10-25",
-            "end_date": "2025-10-27",
-            "is_online": False
-        },
-        {
-            "name": "MHacks 17",
-            "url": "https://mhacks.org/",
-            "location": "Ann Arbor, MI",
-            "start_date": "2025-11-01",
-            "end_date": "2025-11-03",
-            "is_online": False
-        },
-        {
-            "name": "HackIllinois 2025",
-            "url": "https://hackillinois.org/",
-            "location": "Champaign, IL",
-            "start_date": "2025-02-28",
-            "end_date": "2025-03-02",
-            "is_online": False
-        },
-        {
-            "name": "HackDuke 2025",
-            "url": "https://hackduke.org/",
-            "location": "Durham, NC",
-            "start_date": "2025-11-08",
-            "end_date": "2025-11-10",
-            "is_online": False
-        },
-        {
-            "name": "Global Hack Week 2025",
-            "url": "https://ghw.mlh.io/",
-            "location": "Online",
-            "start_date": "2025-01-06",
-            "end_date": "2025-01-12",
-            "is_online": True
-        },
-        {
-            "name": "Local Hack Day 2025",
-            "url": "https://localhackday.mlh.io/",
-            "location": "Various Locations",
-            "start_date": "2025-01-25",
-            "end_date": "2025-01-26",
-            "is_online": True
-        },
-        {
-            "name": "HackHarvard 2025",
-            "url": "https://hackharvard.io/",
-            "location": "Cambridge, MA",
-            "start_date": "2025-10-11",
-            "end_date": "2025-10-13",
-            "is_online": False
-        },
-        {
-            "name": "LAHacks 2025",
-            "url": "https://lahacks.com/",
-            "location": "Los Angeles, CA",
-            "start_date": "2025-03-21",
-            "end_date": "2025-03-23",
-            "is_online": False
-        },
-        {
-            "name": "HackUMass 2025",
-            "url": "https://hackumass.com/",
-            "location": "Amherst, MA",
-            "start_date": "2025-11-15",
-            "end_date": "2025-11-17",
-            "is_online": False
-        }
-    ]
 
 
 def transform_mlh_event(event: Dict[str, Any]) -> Optional[Scholarship]:
