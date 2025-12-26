@@ -263,13 +263,14 @@ export const normalizeApplyUrl = (url: string | undefined): string => {
     // Intigriti
     // -------------------------
     // Broken/auth-gated: https://app.intigriti.com/programs/<company>/<program>/detail
-    // Public:           https://www.intigriti.com/programs/<company>/<program>
-    if (hostname === 'app.intigriti.com') {
-      const m = pathname.match(/^\/programs\/([^\/]+)\/([^\/]+)(?:\/detail)?\/?$/i);
+    // Public researcher page: https://www.intigriti.com/researchers/programs/<company>/<program>/detail
+    if (hostname === 'app.intigriti.com' || hostname === 'intigriti.com') {
+      const m = pathname.match(/^(?:\/researchers)?\/programs\/([^\/]+)\/([^\/]+)(?:\/detail)?\/?$/i);
       if (m?.[1] && m?.[2]) {
         const company = m[1];
         const program = m[2];
-        return `https://www.intigriti.com/programs/${company}/${program}`;
+        // Use the researcher-facing public URL
+        return `https://www.intigriti.com/researchers/programs/${company}/${program}/detail`;
       }
       return urlString;
     }
