@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Sparkles, Loader2, Maximize2, Minimize2, Bookmark, ExternalLink, ArrowRight } from 'lucide-react';
+import { MessageCircle, X, Send, Sparkles, Loader2, Maximize2, Minimize2, Bookmark, ExternalLink, ArrowRight, ChevronDown, ChevronUp, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -23,10 +23,49 @@ interface Action {
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  thinkingProcess?: string;  // V2: Separate thinking process for collapsible display
   opportunities?: Scholarship[];
   actions?: Action[];
   suggestions?: string[];
 }
+
+// V2: Collapsible Thinking Process Component
+const ThinkingProcessSection = ({ content }: { content: string }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  if (!content) return null;
+  
+  return (
+    <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 overflow-hidden">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-primary hover:bg-primary/10 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <Brain className="h-3.5 w-3.5" />
+          <span>Search Analysis</span>
+        </div>
+        {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+      </button>
+      
+      {isExpanded && (
+        <div className="px-3 pb-3 text-xs text-muted-foreground">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              p: ({ node, ...props }) => <p className="my-1" {...props} />,
+              strong: ({ node, ...props }) => <strong className="text-foreground font-semibold" {...props} />,
+              ul: ({ node, ...props }) => <ul className="list-disc list-inside my-1" {...props} />,
+              li: ({ node, ...props }) => <li className="ml-2" {...props} />,
+            }}
+          >
+            {content}
+          </ReactMarkdown>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const FloatingChatAssistant = () => {
   const { user } = useAuth();
@@ -109,9 +148,11 @@ export const FloatingChatAssistant = () => {
       const data = await response.json();
 
       // Build structured response with actions and suggestions
+      // V2: Handle separate thinking_process from backend
       const assistantMessage: Message = {
         role: 'assistant',
         content: data.message,
+        thinkingProcess: data.thinking_process || '',  // V2: Separate field
         opportunities: data.opportunities || [],
         actions: data.actions || buildDefaultActions(data.opportunities),
         suggestions: data.suggestions || buildDefaultSuggestions(messageText),
@@ -279,7 +320,12 @@ export const FloatingChatAssistant = () => {
                     : 'bg-muted text-foreground'
                 )}
               >
-                {/* ENHANCED: Markdown rendering */}
+                {/* V2: Collapsible Thinking Process Section */}
+                {message.thinkingProcess && (
+                  <ThinkingProcessSection content={message.thinkingProcess} />
+                )}
+
+                {/* ENHANCED: Markdown rendering for main response */}
                 <div className="prose prose-sm dark:prose-invert max-w-none">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
