@@ -84,26 +84,22 @@ export const OpportunityCard = ({
   const deadlineInfo = getDeadlineInfo(scholarship.deadline);
   const isNew = isNewScholarship(scholarship.discovered_at);
 
-  // Calculate match score consistently with detail page
+  // Calculate match score - ALWAYS recalculate to fix 47% ghost issue
   const matchScore = useMemo(() => {
-    // If stored score exists and is reasonable, use it
-    if (scholarship.match_score && scholarship.match_score >= 40) {
-      return scholarship.match_score;
-    }
-
-    // Otherwise, calculate using matchingEngine (same as detail page)
+    // Always calculate fresh score using matchingEngine
     try {
       const profileData = localStorage.getItem('scholarstream_profile');
       if (profileData) {
         const profile = JSON.parse(profileData) as UserProfile;
         const matchData = matchingEngine.calculateMatchScore(scholarship, profile);
-        return matchData.total;
+        // Only use stored score if calculated score is 0 (indicates error)
+        return matchData.total > 0 ? matchData.total : (scholarship.match_score || 50);
       }
     } catch {
       // Fall back to stored score
     }
 
-    return scholarship.match_score || 0;
+    return scholarship.match_score || 50;
   }, [scholarship]);
 
   // Infer type from data
@@ -190,7 +186,6 @@ export const OpportunityCard = ({
     return tmp.textContent || tmp.innerText || '';
   };
 
-<<<<<<< Updated upstream
   // Format amount display -> Cleaned & Enhanced for DoraHacks/MLH
   const getDisplayAmount = (): string => {
     // Priority 1: Use numeric amount if > 0
@@ -215,18 +210,12 @@ export const OpportunityCard = ({
     // Default for hackathons/bounties vs scholarships
     const type = inferType();
     if (type === 'hackathon' || type === 'bounty') {
-      return 'Prize Pool';
+      return 'Prizes + Swag';
     }
     return 'See Details';
   };
   
   const displayAmount = getDisplayAmount();
-=======
-  // Format amount display -> Cleaned
-  const displayAmount = scholarship.amount > 0
-    ? formatCurrency(scholarship.amount)
-    : stripHtml(scholarship.amount_display || 'See Details');
->>>>>>> Stashed changes
 
   return (
     <Card

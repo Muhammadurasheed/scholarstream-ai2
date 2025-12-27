@@ -28,23 +28,28 @@ export class OpportunityMatchingEngine {
   };
 
   // Interest-to-keyword mapping for intelligent matching (mirrors backend personalization_engine.py)
+  // ENHANCED: Added DoraHacks, MLH, and broader tech keywords for better matching
   private readonly interestKeywords: Record<string, string[]> = {
-    'artificial intelligence': ['ai', 'machine learning', 'deep learning', 'neural', 'nlp', 'gpt', 'llm', 'generative'],
-    'ai': ['artificial intelligence', 'machine learning', 'deep learning', 'neural', 'nlp', 'gpt', 'llm', 'generative'],
-    'web development': ['web', 'frontend', 'backend', 'fullstack', 'react', 'node', 'javascript', 'typescript'],
-    'blockchain': ['blockchain', 'crypto', 'web3', 'defi', 'nft', 'ethereum', 'solana', 'smart contract'],
-    'web3': ['blockchain', 'crypto', 'defi', 'nft', 'ethereum', 'solana', 'smart contract', 'decentralized'],
-    'cybersecurity': ['security', 'hacking', 'penetration', 'bug bounty', 'ctf', 'infosec', 'ethical hacking'],
-    'data science': ['data', 'analytics', 'statistics', 'visualization', 'machine learning', 'big data'],
+    'artificial intelligence': ['ai', 'machine learning', 'deep learning', 'neural', 'nlp', 'gpt', 'llm', 'generative', 'ml', 'tensorflow', 'pytorch'],
+    'ai': ['artificial intelligence', 'machine learning', 'deep learning', 'neural', 'nlp', 'gpt', 'llm', 'generative', 'ml', 'tensorflow', 'pytorch'],
+    'web development': ['web', 'frontend', 'backend', 'fullstack', 'react', 'node', 'javascript', 'typescript', 'html', 'css', 'nextjs', 'vue', 'angular'],
+    'blockchain': ['blockchain', 'crypto', 'web3', 'defi', 'nft', 'ethereum', 'solana', 'smart contract', 'dorahacks', 'buidl', 'dao'],
+    'web3': ['blockchain', 'crypto', 'defi', 'nft', 'ethereum', 'solana', 'smart contract', 'decentralized', 'dorahacks', 'buidl', 'dao', 'dapp'],
+    'cybersecurity': ['security', 'hacking', 'penetration', 'bug bounty', 'ctf', 'infosec', 'ethical hacking', 'intigriti', 'hackerone'],
+    'data science': ['data', 'analytics', 'statistics', 'visualization', 'machine learning', 'big data', 'kaggle', 'pandas', 'numpy'],
     'mobile': ['mobile', 'ios', 'android', 'react native', 'flutter', 'swift', 'kotlin', 'app'],
     'game development': ['game', 'unity', '3d', 'unreal', 'gaming', 'gamedev'],
-    'hackathons': ['hackathon', 'hack', 'build', 'competition', 'sprint', 'devpost', 'mlh'],
-    'software': ['software', 'engineering', 'developer', 'programming', 'code', 'tech'],
+    'hackathons': ['hackathon', 'hack', 'build', 'competition', 'sprint', 'devpost', 'mlh', 'dorahacks', 'taikai', 'hackquest', 'buidl'],
+    'software': ['software', 'engineering', 'developer', 'programming', 'code', 'tech', 'coding', 'algorithm', 'api'],
     'design': ['design', 'ui', 'ux', 'figma', 'product', 'creative', 'graphics'],
     'fintech': ['finance', 'banking', 'payments', 'trading', 'financial', 'defi'],
     'healthcare': ['healthcare', 'medical', 'biotech', 'health', 'telemedicine'],
-    'entrepreneurship': ['startup', 'business', 'innovation', 'founder', 'venture'],
-    'cloud': ['cloud', 'aws', 'azure', 'gcp', 'serverless', 'devops', 'kubernetes'],
+    'entrepreneurship': ['startup', 'business', 'innovation', 'founder', 'venture', 'pitch'],
+    'cloud': ['cloud', 'aws', 'azure', 'gcp', 'serverless', 'devops', 'kubernetes', 'docker'],
+    // Added common student interests
+    'coding': ['code', 'programming', 'developer', 'software', 'hackathon', 'algorithm', 'python', 'javascript'],
+    'python': ['python', 'django', 'flask', 'pandas', 'numpy', 'data science', 'ml'],
+    'open source': ['open source', 'github', 'contribution', 'oss', 'linux', 'community'],
   };
 
   /**
@@ -193,30 +198,52 @@ export class OpportunityMatchingEngine {
       synonyms.forEach(s => expandedInterests.add(s.toLowerCase()));
     }
 
-    // Step 2: Build searchable text from opportunity
+    // Step 2: Build searchable text from opportunity (ENHANCED with more fields)
     const oppText = [
       ...(opp.tags || []),
       opp.name || '',
       opp.description || '',
-      opp.organization || ''
+      opp.organization || '',
+      opp.source_url || '', // Include source for platform detection
     ].join(' ').toLowerCase();
 
     // Step 3: Count how many expanded interests match
     let matchCount = 0;
+    const matchedKeywords: string[] = [];
     for (const keyword of expandedInterests) {
       if (oppText.includes(keyword)) {
         matchCount++;
+        matchedKeywords.push(keyword);
       }
     }
 
-    // Step 4: Calculate score (minimum 0.3 if user has interests, they're trying)
+    // Step 4: Calculate score with improved logic
     const ratio = matchCount / Math.max(3, expandedInterests.size);
     let score = Math.max(0.3, Math.min(ratio * 1.5, 1.0)); // Boost ratio by 1.5x
+
+    // ENHANCED BONUS: Tech students should match with ALL hackathons
+    const techInterests = ['software', 'coding', 'programming', 'ai', 'web', 'blockchain', 'data', 'hackathon'];
+    const hasTechInterest = interests.some((i: string) => 
+      techInterests.some(tech => i.toLowerCase().includes(tech))
+    );
+    const isHackathon = oppText.includes('hackathon') || oppText.includes('devpost') || 
+                         oppText.includes('mlh') || oppText.includes('dorahacks');
+    
+    if (hasTechInterest && isHackathon) {
+      score = Math.max(score, 0.7); // Tech students get minimum 70% for hackathons
+    }
 
     // Bonus for major match
     const major = (profile.major || '').toLowerCase();
     if (major && oppText.includes(major)) {
       score = Math.min(score + 0.2, 1.0);
+    }
+
+    // Bonus for CS/Software students on technical opportunities
+    if (major.includes('computer') || major.includes('software') || major.includes('engineering')) {
+      if (isHackathon || oppText.includes('tech') || oppText.includes('code')) {
+        score = Math.min(score + 0.15, 1.0);
+      }
     }
 
     return score;
