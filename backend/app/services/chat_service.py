@@ -118,10 +118,11 @@ class ChatService:
             response = await self.model.generate_content_async(full_prompt)
             ai_message = response.text
             
-            # FORMATTING: Prepend thinking process as structured markdown
+            # V2 FIX: Separate thinking process from recommendation for better UX
+            # The frontend will render these as separate collapsible sections
+            thinking_section = ""
             if thinking_process:
                 thinking_section = "\n".join(thinking_process)
-                ai_message = f"## 🧠 My Thinking Process\n\n{thinking_section}\n\n---\n\n## 💡 My Recommendation\n\n{ai_message}"
             
             # Save conversation
             await self._save_message(user_id, "user", message)
@@ -129,6 +130,7 @@ class ChatService:
             
             return {
                 'message': ai_message,
+                'thinking_process': thinking_section,  # V2: Separate for frontend streaming
                 'opportunities': opportunities[:10] if opportunities else [],
                 'actions': self._generate_actions(opportunities, message),
                 'search_stats': search_stats
@@ -241,8 +243,15 @@ If NO SEARCH RESULTS are found:
     ) -> tuple[List[Dict[str, Any]], Dict[str, int]]:
         """
         Search opportunities with detailed statistics for transparency
+        V2 FIXES:
+        - Recalculate match scores in real-time
+        - Broadened location logic (global = accessible)
+        - Software devs match hackathons/bounties
         Returns: (opportunities_list, statistics_dict)
         """
+        from app.services.personalization_engine import personalization_engine
+        from app.models import UserProfile
+        
         stats = {
             'total_scanned': 0,
             'expired': 0,
@@ -259,56 +268,88 @@ If NO SEARCH RESULTS are found:
             filtered_opps = []
             now = datetime.now()
             
-            user_country = (profile.get('country') or 'United States').lower()
+            user_country = (profile.get('country') or '').lower()
             user_state = (profile.get('state') or '').lower()
+            user_interests = [i.lower() for i in (profile.get('interests') or [])]
+            
+            # Build UserProfile object for scoring
+            user_profile_obj = None
+            try:
+                user_profile_obj = UserProfile(**profile) if profile else None
+            except Exception:
+                pass
             
             for opp in all_opps:
-                # 1. STRICT EXPIRATION CHECK (with grace period for today)
+                # 1. EXPIRATION CHECK (lenient - include today)
                 if opp.deadline:
                     try:
                         deadline_date = datetime.fromisoformat(opp.deadline.replace('Z', '+00:00'))
-                        # Filter if deadline was yesterday or earlier
+                        # Filter only if deadline was BEFORE today
                         if deadline_date.date() < now.date():
                             stats['expired'] += 1
                             continue
-                    except ValueError:
-                        stats['expired'] += 1
-                        continue
+                    except (ValueError, AttributeError):
+                        # If we can't parse deadline, assume valid
+                        pass
                 
-                # 2. TYPE FILTER
+                # 2. TYPE FILTER (BROADENED: Software devs match hackathons/bounties/competitions)
                 opp_type = self._infer_type(opp)
-                if criteria.get('types') and opp_type not in criteria['types']:
-                    stats['type_filtered'] += 1
-                    continue
+                requested_types = criteria.get('types') or []
                 
-                # 3. LOCATION FILTER (Enhanced)
+                # V2 FIX: If user has software/coding/tech interests, auto-include hackathons/bounties
+                tech_keywords = ['software', 'coding', 'programming', 'developer', 'tech', 'ai', 'web', 'mobile', 'computer']
+                user_is_tech = any(kw in ' '.join(user_interests) for kw in tech_keywords)
+                
+                if requested_types:
+                    if opp_type not in requested_types:
+                        # V2: Tech users automatically qualify for hackathons/bounties
+                        if not (user_is_tech and opp_type in ['hackathon', 'bounty', 'competition']):
+                            stats['type_filtered'] += 1
+                            continue
+                
+                # 3. LOCATION FILTER (V2: VERY LENIENT for global opportunities)
                 eligibility = getattr(opp, 'eligibility', {})
                 if hasattr(eligibility, 'dict'):
                     eligibility = eligibility.dict()
+                elif hasattr(eligibility, 'model_dump'):
+                    eligibility = eligibility.model_dump()
                 
                 opp_states = [s.lower() for s in (eligibility.get('states') or [])]
                 opp_citizenship = (eligibility.get('citizenship') or '').lower()
+                geo_tags = [t.lower() for t in (getattr(opp, 'geo_tags', []) or [])]
                 
-                # State restriction check
+                # V2 FIX: Global/Remote/International opportunities accessible to ALL
+                is_global = any(tag in geo_tags for tag in ['global', 'remote', 'international', 'online', 'worldwide'])
+                is_open_citizenship = not opp_citizenship or opp_citizenship in ['any', 'international', 'all']
+                
+                # Only filter if explicitly restricted AND user doesn't match
+                location_restricted = False
                 if opp_states and user_state:
                     if not any(user_state in s for s in opp_states):
-                        stats['location_filtered'] += 1
-                        continue
+                        if not is_global:
+                            location_restricted = True
                 
-                # Citizenship restriction check
-                if opp_citizenship and opp_citizenship != 'any':
-                    if user_country not in opp_citizenship and 'international' not in opp_citizenship:
-                        stats['location_filtered'] += 1
-                        continue
+                if opp_citizenship and opp_citizenship not in ['any', 'international', 'all']:
+                    if user_country and user_country not in opp_citizenship:
+                        if not is_global:
+                            location_restricted = True
                 
-                # 4. URGENCY FILTER
+                # V2: Hackathons/Bounties are almost always global
+                if opp_type in ['hackathon', 'bounty', 'competition']:
+                    location_restricted = False
+                
+                if location_restricted:
+                    stats['location_filtered'] += 1
+                    continue
+                
+                # 4. URGENCY FILTER (unchanged)
                 urgency = criteria.get('urgency', 'any')
                 if urgency != 'any' and opp.deadline:
                     try:
                         deadline_date = datetime.fromisoformat(opp.deadline.replace('Z', '+00:00'))
                         days_until = (deadline_date - now).days
                         
-                        if urgency == 'immediate' and days_until > 2:
+                        if urgency == 'immediate' and days_until > 7:
                             stats['urgency_filtered'] += 1
                             continue
                         if urgency == 'this_week' and days_until > 7:
@@ -318,13 +359,45 @@ If NO SEARCH RESULTS are found:
                             stats['urgency_filtered'] += 1
                             continue
                     except:
-                        continue
+                        pass
                 
                 filtered_opps.append(opp)
             
-            # Convert to dict format
+            # V2 FIX: Real-time match score recalculation
             results = []
-            for opp in filtered_opps[:20]:  # Limit to 20
+            for opp in filtered_opps[:30]:  # Limit to 30
+                # Build opportunity dict for personalization engine
+                opp_dict = {
+                    'name': opp.name or '',
+                    'title': opp.name or '',
+                    'description': opp.description or '',
+                    'organization': opp.organization or '',
+                    'tags': opp.tags or [],
+                    'geo_tags': getattr(opp, 'geo_tags', []) or [],
+                    'eligibility': {},
+                    'requirements': {}
+                }
+                
+                # Get eligibility dict
+                if hasattr(opp, 'eligibility'):
+                    if hasattr(opp.eligibility, 'model_dump'):
+                        opp_dict['eligibility'] = opp.eligibility.model_dump()
+                    elif hasattr(opp.eligibility, 'dict'):
+                        opp_dict['eligibility'] = opp.eligibility.dict()
+                    elif isinstance(opp.eligibility, dict):
+                        opp_dict['eligibility'] = opp.eligibility
+                
+                # V2 FIX: Calculate fresh match score
+                fresh_score = 50  # Default
+                if user_profile_obj:
+                    try:
+                        fresh_score = personalization_engine.calculate_personalized_score(opp_dict, user_profile_obj)
+                    except Exception as e:
+                        logger.warning("Score calc failed", error=str(e))
+                        fresh_score = opp.match_score or 50
+                elif opp.match_score:
+                    fresh_score = opp.match_score
+                
                 results.append({
                     'id': opp.id,
                     'name': opp.name,
@@ -333,7 +406,7 @@ If NO SEARCH RESULTS are found:
                     'amount_display': opp.amount_display,
                     'deadline': opp.deadline,
                     'type': self._infer_type(opp),
-                    'match_score': opp.match_score,
+                    'match_score': int(round(fresh_score)),  # V2: Fresh score
                     'source_url': opp.source_url,
                     'tags': opp.tags,
                     'description': opp.description,
@@ -341,11 +414,11 @@ If NO SEARCH RESULTS are found:
                     'priority_level': opp.priority_level
                 })
             
-            # Sort by match score
+            # Sort by fresh match score
             results.sort(key=lambda x: x.get('match_score', 0), reverse=True)
             
             logger.info(
-                "Search completed with stats",
+                "Search V2 completed",
                 total_scanned=stats['total_scanned'],
                 final_matches=len(results),
                 expired_filtered=stats['expired'],

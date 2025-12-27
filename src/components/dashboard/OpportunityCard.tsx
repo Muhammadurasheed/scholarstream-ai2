@@ -190,10 +190,36 @@ export const OpportunityCard = ({
     return tmp.textContent || tmp.innerText || '';
   };
 
-  // Format amount display -> Cleaned
-  const displayAmount = scholarship.amount > 0
-    ? formatCurrency(scholarship.amount)
-    : stripHtml(scholarship.amount_display || 'Varies');
+  // Format amount display -> Cleaned & Enhanced for DoraHacks/MLH
+  const getDisplayAmount = (): string => {
+    // Priority 1: Use numeric amount if > 0
+    if (scholarship.amount > 0) {
+      return formatCurrency(scholarship.amount);
+    }
+    
+    // Priority 2: Use amount_display if it has value content
+    const amountDisplay = stripHtml(scholarship.amount_display || '');
+    if (amountDisplay && 
+        !['varies', 'see details', 'tbd', 'n/a', 'unknown', '$0', '0'].includes(amountDisplay.toLowerCase().trim())) {
+      return amountDisplay;
+    }
+    
+    // Priority 3: Check tags for prize info (common in hackathons)
+    const tags = scholarship.tags || [];
+    const prizeTag = tags.find(t => t.toLowerCase().includes('prize') || t.toLowerCase().includes('$'));
+    if (prizeTag) {
+      return prizeTag;
+    }
+    
+    // Default for hackathons/bounties vs scholarships
+    const type = inferType();
+    if (type === 'hackathon' || type === 'bounty') {
+      return 'Prize Pool';
+    }
+    return 'See Details';
+  };
+  
+  const displayAmount = getDisplayAmount();
 
   return (
     <Card
