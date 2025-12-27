@@ -90,11 +90,15 @@ class Settings(BaseSettings):
     @property
     def firebase_credentials(self) -> dict:
         """Format Firebase credentials for admin SDK initialization"""
+        private_key = self.firebase_private_key
+        if private_key:
+            private_key = private_key.replace('\\n', '\n')
+            
         return {
             "type": "service_account",
             "project_id": self.firebase_project_id,
             "private_key_id": self.firebase_private_key_id,
-            "private_key": self.firebase_private_key.replace('\\n', '\n'),
+            "private_key": private_key,
             "client_email": self.firebase_client_email,
             "client_id": self.firebase_client_id,
             "auth_uri": self.firebase_auth_uri,

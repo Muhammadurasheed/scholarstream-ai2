@@ -216,7 +216,7 @@ def transform_mlh_event(event: Dict[str, Any]) -> Optional[Scholarship]:
             },
             'eligibility_text': 'Open to high school and university students',
             'source_type': 'mlh',
-            'match_score': 55,
+            'match_score': 0.0,
             'match_tier': 'Good',
             'verified': True,
             'last_verified': datetime.now().isoformat(),

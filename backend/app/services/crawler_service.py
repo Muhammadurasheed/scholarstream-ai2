@@ -388,8 +388,15 @@ class UniversalCrawlerService:
                 await asyncio.sleep(3)
                 
                 # Additional wait for specific slow sites
-                if any(domain in url for domain in ['taikai.network', 'mlh.io', 'hackquest.io', 'dorahacks.io']):
-                    await asyncio.sleep(2)  # Extra 2s for these slow SPAs
+                SPA_HEAVY_SITES = ['taikai.network', 'mlh.io', 'hackquest.io', 'dorahacks.io', 'kaggle.com', 'devfolio.co']
+                if any(domain in url for domain in SPA_HEAVY_SITES):
+                    await asyncio.sleep(4)  # Extra 4s for heavy SPAs to fully hydrate
+                    # Extra scroll to trigger lazy loading
+                    try:
+                        await page.evaluate("window.scrollBy(0, document.body.scrollHeight)")
+                        await asyncio.sleep(1.5)
+                    except:
+                        pass
                 
                 content = await page.content()
                 

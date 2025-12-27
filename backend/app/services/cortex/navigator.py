@@ -27,7 +27,6 @@ class Sentinel:
         # ======== HACKATHONS (Global) ========
         "https://devpost.com/hackathons",
         "https://mlh.io/seasons/2026/events",
-        "https://dorahacks.io/hackathon",
         "https://angelhack.com/events/",
         "https://www.hackquest.io/hackathons",
         "https://devfolio.co/hackathons",

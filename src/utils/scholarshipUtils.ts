@@ -12,14 +12,14 @@ export const formatCurrency = (amount: number): string => {
 };
 
 export const getDeadlineInfo = (deadline: string | null | undefined) => {
-  // Explicitly handle Ongoing or missing deadlines
-  if (!deadline || deadline === 'Ongoing' || deadline.toLowerCase() === 'ongoing') {
+  // Handle missing or unknown deadlines with honest messaging
+  if (!deadline || deadline === 'Ongoing' || deadline.toLowerCase() === 'ongoing' || deadline === 'TBD' || deadline === 'Unknown') {
     return {
       urgency: 'normal',
-      color: 'text-green-600',
-      formattedDate: 'Ongoing',
-      countdown: 'Open indefinitely',
-      daysUntil: 365 // Treat as far future
+      color: 'text-muted-foreground',
+      formattedDate: 'See listing',
+      countdown: 'Check details',
+      daysUntil: 365 // Treat as far future for sorting
     };
   }
 

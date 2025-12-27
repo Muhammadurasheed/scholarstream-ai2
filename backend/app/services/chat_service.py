@@ -8,9 +8,12 @@ from typing import Dict, Any, List, Optional
 import structlog
 from datetime import datetime, timedelta
 
-from app.models import UserProfile
+from app.models import UserProfile, Scholarship
 from app.database import db
 from app.config import settings
+from app.services.matching_service import matching_service
+from app.services.personalization_engine import personalization_engine
+from app.services.cortex.navigator import scout
 
 logger = structlog.get_logger()
 
@@ -78,27 +81,33 @@ class ChatService:
                     context.get('user_profile', {})
                 )
                 
+                # Check if it was broadened
+                if search_criteria.get('broadened'):
+                    thinking_process.append("\n⚠️ **Broadening search to find more potential matches...**")
+                
                 # TRANSPARENCY: Show filtering results
                 thinking_process.append(f"\n📊 **Search Results:**")
                 thinking_process.append(f"- Total opportunities scanned: **{search_stats['total_scanned']}**")
                 thinking_process.append(f"- Expired (filtered out): {search_stats['expired']}")
                 thinking_process.append(f"- Location mismatch (filtered out): {search_stats['location_filtered']}")
                 thinking_process.append(f"- Type mismatch (filtered out): {search_stats['type_filtered']}")
-                if search_stats['urgency_filtered'] > 0:
+                if search_stats.get('urgency_filtered', 0) > 0:
                     thinking_process.append(f"- Urgency mismatch (filtered out): {search_stats['urgency_filtered']}")
                 thinking_process.append(f"- **✅ Final matches: {len(opportunities)}**")
                 
                 # Add opportunities to prompt for AI context
                 if opportunities:
                     system_prompt += f"\n\nSEARCH RESULTS ({len(opportunities)} found):\n"
-                    # Limit to top 3 for Emergency to reduce cognitive load
-                    limit = 3 if is_emergency else 5
+                    # UPGRADED: Show MORE results in emergency to give the student more options
+                    limit = 10 if is_emergency else 8
                     for i, opp in enumerate(opportunities[:limit], 1):
-                        system_prompt += f"\n{i}. **{opp.get('name')}** - ${opp.get('amount', 0):,}\n"
-                        system_prompt += f"   - Type: {opp.get('type')}\n"
-                        system_prompt += f"   - Deadline: {opp.get('deadline')}\n"
-                        system_prompt += f"   - Location: {opp.get('location_eligibility')}\n"
+                        system_prompt += f"\n{i}. **{opp.get('name')}** - {opp.get('amount_display', '$0')}\n"
+                        system_prompt += f"   - Organization: {opp.get('organization')}\n"
                         system_prompt += f"   - Match Score: {opp.get('match_score')}%\n"
+                        system_prompt += f"   - Deadline: {opp.get('deadline') or 'Check listing'}\n"
+                        system_prompt += f"   - Link: {opp.get('source_url')}\n"
+                        system_prompt += f"   - Type: {opp.get('type')}\n"
+                        system_prompt += f"   - Location: {opp.get('location_eligibility')}\n"
             
             # Generate AI response with enhanced prompt
             prompt_suffix = "\n\nUSER MESSAGE: {message}\n\nProvide a helpful, well-formatted markdown response:"
@@ -213,13 +222,13 @@ If NO SEARCH RESULTS are found:
         }
         
         # Detect types
-        if 'hackathon' in message_lower:
+        if any(word in message_lower for word in ['hackathon', 'build', 'sprint']):
             criteria['types'].append('hackathon')
-        if 'bounty' in message_lower or 'bounties' in message_lower:
+        if any(word in message_lower for word in ['bounty', 'bug', 'issue']):
             criteria['types'].append('bounty')
-        if 'scholarship' in message_lower:
+        if any(word in message_lower for word in ['scholarship', 'grant', 'funding']):
             criteria['types'].append('scholarship')
-        if 'competition' in message_lower:
+        if any(word in message_lower for word in ['competition', 'contest', 'challenge']):
             criteria['types'].append('competition')
         
         # Default to all types if none specified
@@ -234,20 +243,31 @@ If NO SEARCH RESULTS are found:
         elif any(word in message_lower for word in ['this month', 'month']):
             criteria['urgency'] = 'this_month'
         
+        # Extract keywords from the profile to enrich search
+        interests = profile.get('interests', [])
+        if interests:
+            criteria['keywords'].extend(interests[:3])  # Top 3 interests as search keywords
+        
         return criteria
     
     async def _search_opportunities_with_stats(
         self, 
         criteria: Dict[str, Any], 
-        profile: Dict
+        profile: Dict,
+        depth: int = 0
     ) -> tuple[List[Dict[str, Any]], Dict[str, int]]:
         """
+<<<<<<< Updated upstream
         Search opportunities with detailed statistics for transparency
         V2 FIXES:
         - Recalculate match scores in real-time
         - Broadened location logic (global = accessible)
         - Software devs match hackathons/bounties
         Returns: (opportunities_list, statistics_dict)
+=======
+        Search opportunities with detailed statistics and real-time matching
+        Recursive broadening for emergency situations.
+>>>>>>> Stashed changes
         """
         from app.services.personalization_engine import personalization_engine
         from app.models import UserProfile
@@ -261,14 +281,29 @@ If NO SEARCH RESULTS are found:
         }
         
         try:
-            # Get all opportunities from database
+            # 1. Start with Database Search
             all_opps = await db.get_all_scholarships()
             stats['total_scanned'] = len(all_opps)
             
+            # TRIGGER ON-DEMAND SCRAPING if database is thin
+            if depth == 0 and (len(all_opps) < 20 or any(kw in criteria['types'] for kw in ['hackathon', 'bounty'])):
+                logger.info("Triggering background on-demand search mission")
+                search_query = f"{' '.join(criteria['types'])} {profile.get('major', '')} {profile.get('school', '')} {profile.get('interests', [''])[0]}"
+                asyncio.create_task(scout.execute_mission(search_query))
+            
             filtered_opps = []
             now = datetime.now()
+            user_profile_obj = UserProfile(**profile) if profile else None
             
+<<<<<<< Updated upstream
             user_country = (profile.get('country') or '').lower()
+=======
+            # Detect Nigeran context for UI/Ibadan
+            school_str = str(profile.get('school', '')).lower()
+            is_nigeria = 'nigeria' in str(profile.get('country', '')).lower() or 'ibadan' in school_str or 'nigeria' in school_str
+            
+            user_country = (profile.get('country') or ('Nigeria' if is_nigeria else 'United States')).lower()
+>>>>>>> Stashed changes
             user_state = (profile.get('state') or '').lower()
             user_interests = [i.lower() for i in (profile.get('interests') or [])]
             
@@ -280,6 +315,7 @@ If NO SEARCH RESULTS are found:
                 pass
             
             for opp in all_opps:
+<<<<<<< Updated upstream
                 # 1. EXPIRATION CHECK (lenient - include today)
                 if opp.deadline:
                     try:
@@ -293,9 +329,23 @@ If NO SEARCH RESULTS are found:
                         pass
                 
                 # 2. TYPE FILTER (BROADENED: Software devs match hackathons/bounties/competitions)
+=======
+                # STRICT EXPIRATION CHECK
+                if opp.deadline:
+                    try:
+                        deadline_date = datetime.fromisoformat(opp.deadline.replace('Z', '+00:00'))
+                        if deadline_date.date() < now.date() - timedelta(days=1): # 1 day grace for timezones
+                            stats['expired'] += 1
+                            continue
+                    except:
+                        pass
+                
+                # TYPE FILTER
+>>>>>>> Stashed changes
                 opp_type = self._infer_type(opp)
                 requested_types = criteria.get('types') or []
                 
+<<<<<<< Updated upstream
                 # V2 FIX: If user has software/coding/tech interests, auto-include hackathons/bounties
                 tech_keywords = ['software', 'coding', 'programming', 'developer', 'tech', 'ai', 'web', 'mobile', 'computer']
                 user_is_tech = any(kw in ' '.join(user_interests) for kw in tech_keywords)
@@ -343,19 +393,34 @@ If NO SEARCH RESULTS are found:
                     continue
                 
                 # 4. URGENCY FILTER (unchanged)
+=======
+                # LOCATION FILTER
+                location_str = self._get_location_string(opp).lower()
+                is_global = any(kw in location_str for kw in ['global', 'international', 'worldwide', 'anywhere', 'remote'])
+                
+                if not is_global:
+                    if user_country not in location_str and user_state not in location_str:
+                        # Hard match for Nigeria/Africa keywords
+                        if not (is_nigeria and any(kw in location_str for kw in ['nigeria', 'africa', 'developing'])):
+                            stats['location_filtered'] += 1
+                            continue
+                
+                # URGENCY FILTER
+>>>>>>> Stashed changes
                 urgency = criteria.get('urgency', 'any')
                 if urgency != 'any' and opp.deadline:
                     try:
                         deadline_date = datetime.fromisoformat(opp.deadline.replace('Z', '+00:00'))
                         days_until = (deadline_date - now).days
                         
+<<<<<<< Updated upstream
                         if urgency == 'immediate' and days_until > 7:
+=======
+                        if urgency == 'immediate' and days_until > 10: # Expanded from 7 to 10
+>>>>>>> Stashed changes
                             stats['urgency_filtered'] += 1
                             continue
-                        if urgency == 'this_week' and days_until > 7:
-                            stats['urgency_filtered'] += 1
-                            continue
-                        if urgency == 'this_month' and days_until > 30:
+                        if urgency == 'this_week' and days_until > 20: # Expanded from 14 to 20
                             stats['urgency_filtered'] += 1
                             continue
                     except:
@@ -363,6 +428,7 @@ If NO SEARCH RESULTS are found:
                 
                 filtered_opps.append(opp)
             
+<<<<<<< Updated upstream
             # V2 FIX: Real-time match score recalculation
             results = []
             for opp in filtered_opps[:30]:  # Limit to 30
@@ -397,6 +463,12 @@ If NO SEARCH RESULTS are found:
                         fresh_score = opp.match_score or 50
                 elif opp.match_score:
                     fresh_score = opp.match_score
+=======
+            # REAL-TIME PERSONALIZATION & RANKING
+            results = []
+            for opp in filtered_opps:
+                real_score = personalization_engine.calculate_personalized_score(opp.model_dump(), user_profile_obj)
+>>>>>>> Stashed changes
                 
                 results.append({
                     'id': opp.id,
@@ -406,7 +478,11 @@ If NO SEARCH RESULTS are found:
                     'amount_display': opp.amount_display,
                     'deadline': opp.deadline,
                     'type': self._infer_type(opp),
+<<<<<<< Updated upstream
                     'match_score': int(round(fresh_score)),  # V2: Fresh score
+=======
+                    'match_score': int(real_score),
+>>>>>>> Stashed changes
                     'source_url': opp.source_url,
                     'tags': opp.tags,
                     'description': opp.description,
@@ -414,9 +490,15 @@ If NO SEARCH RESULTS are found:
                     'priority_level': opp.priority_level
                 })
             
+<<<<<<< Updated upstream
             # Sort by fresh match score
+=======
+            # SORT BY MATCH SCORE
+>>>>>>> Stashed changes
             results.sort(key=lambda x: x.get('match_score', 0), reverse=True)
+            results = results[:15]
             
+<<<<<<< Updated upstream
             logger.info(
                 "Search V2 completed",
                 total_scanned=stats['total_scanned'],
@@ -425,10 +507,22 @@ If NO SEARCH RESULTS are found:
                 location_filtered=stats['location_filtered']
             )
             
+=======
+            # EMERGENCY RECOVERY: If 0 results for crisis, broaden and retry ONCE
+            if not results and depth == 0 and (criteria.get('urgency') != 'any' or criteria.get('location') != 'any'):
+                logger.info("CRISIS RECOVERY: Broadening search criteria")
+                broader_criteria = criteria.copy()
+                broader_criteria['urgency'] = 'any'
+                broader_criteria['broadened'] = True # Flag for the thinking process
+                return await self._search_opportunities_with_stats(broader_criteria, profile, depth=1)
+                
+>>>>>>> Stashed changes
             return results, stats
             
         except Exception as e:
             logger.error("Search failed", error=str(e))
+            import traceback
+            traceback.print_exc()
             return [], stats
     
     def _infer_type(self, opp) -> str:

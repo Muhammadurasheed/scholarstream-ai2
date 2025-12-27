@@ -139,7 +139,16 @@ RETURN JSON ARRAY ONLY.
                         # Apply URL Normalization & Fix DevPost 404s
                         item['url'] = self._normalize_url(item['url'])
                         
-                        if item.get('amount_value') is None: item['amount_value'] = 0
+                        # CRITICAL FIX: Map amount_value → amount (the field the model expects)
+                        if item.get('amount_value') is not None:
+                            item['amount'] = float(item.get('amount_value', 0))
+                        elif item.get('amount') is None:
+                            item['amount'] = 0.0
+                        
+                        # Generate amount_display if missing
+                        if not item.get('amount_display') and item.get('amount'):
+                            item['amount_display'] = f"${item['amount']:,.0f}"
+                        
                         if not item.get('eligibility'): item['eligibility'] = "Open to all users."
                         if item.get('deadline') in ["Unknown", "TBD", "None"]: item['deadline'] = None
 

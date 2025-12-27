@@ -190,6 +190,7 @@ export const OpportunityCard = ({
     return tmp.textContent || tmp.innerText || '';
   };
 
+<<<<<<< Updated upstream
   // Format amount display -> Cleaned & Enhanced for DoraHacks/MLH
   const getDisplayAmount = (): string => {
     // Priority 1: Use numeric amount if > 0
@@ -220,6 +221,12 @@ export const OpportunityCard = ({
   };
   
   const displayAmount = getDisplayAmount();
+=======
+  // Format amount display -> Cleaned
+  const displayAmount = scholarship.amount > 0
+    ? formatCurrency(scholarship.amount)
+    : stripHtml(scholarship.amount_display || 'See Details');
+>>>>>>> Stashed changes
 
   return (
     <Card

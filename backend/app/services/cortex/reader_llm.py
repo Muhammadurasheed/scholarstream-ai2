@@ -62,8 +62,8 @@ class ReaderLLM:
         {{
             "title": "String (opportunity name)",
             "organization": "String (hosting org/company)",
-            "amount": Number (prize/award in USD, 0 if unknown),
-            "amount_display": "String (e.g. '$5,000', 'Up to $10K')",
+            "amount": Number (total prize pool in USD - EXTRACT FROM "Prize", "Bounty", "Grant Total", "Award", "Prize Pool" sections. Parse values like '$50,000', '50K USDC', 'Up to $10,000'. Set to 0 ONLY if truly unknown),
+            "amount_display": "Human-readable prize string (e.g. '$50,000', 'Up to $10K', '$5K USDC')",
             "deadline": "ISO 8601 Date String (YYYY-MM-DD) or null",
             "deadline_timestamp": Number (Unix Timestamp) or null,
             "geo_tags": ["String"] (e.g. ["Global", "USA", "Remote"]),
@@ -86,7 +86,7 @@ class ReaderLLM:
         1. If deadline is missing, use null (don't guess).
         2. Geo Tags: "Remote"/"Online" → add "Global". Detect country requirements.
         3. Type Tags: Hackathon, Grant, Bounty, Scholarship, Competition, Internship
-        4. If prize is "Varies" or unclear, set amount to 0.
+        4. If prize is unclear or not explicitly stated as a number, set amount_display to "Check listing for prize pool" and amount to 0. NEVER use "Varies".
         5. Skip expired opportunities if clearly marked as closed/ended.
         6. source_url should be the direct link if visible, else use "{source_url}"
         

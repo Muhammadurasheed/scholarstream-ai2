@@ -68,7 +68,10 @@ class EnrichmentWorker:
                     
                 try:
                     payload = json.loads(msg.value().decode('utf-8'))
-                    if payload.get("html") and payload.get("url"):
+                    # Check for pre-extracted data first
+                    if payload.get("extracted_data"):
+                        batch_messages.append(payload)
+                    elif payload.get("html") and payload.get("url"):
                         batch_messages.append(payload)
                 except Exception as e:
                     logger.error("Failed to decode message", error=str(e))
@@ -83,16 +86,18 @@ class EnrichmentWorker:
                     continue
 
                 # PROCESS PAYLOAD
-                urls = [m.get("url") for m in batch_messages]
-                mission_id = f"refine_{int(time.time())}"
-                discovery_pulse.announce_mission(mission_id, urls[0], "active")
-                
-                logger.info(f"Refining Page Intelligence", urls=urls)
-                
                 start_time = time.time()
+                opportunities = []
                 
-                # Extract using AI Enrichment Service
-                opportunities = await ai_enrichment_service.extract_opportunities_from_html_batch(batch_messages)
+                # Check for pre-extracted data in batch
+                pre_extracted = [m.get("extracted_data") for m in batch_messages if m.get("extracted_data")]
+                
+                if pre_extracted:
+                    logger.info("Using pre-extracted data (Deep Scraper Bypass)", count=len(pre_extracted))
+                    opportunities = pre_extracted
+                else:
+                    # Extract using AI Enrichment Service
+                    opportunities = await ai_enrichment_service.extract_opportunities_from_html_batch(batch_messages)
                 
                 duration = time.time() - start_time
                 
@@ -101,7 +106,7 @@ class EnrichmentWorker:
                     discovery_pulse.complete_mission(mission_id, found_count=0)
                     continue
                     
-                logger.info(f"AI Discovery Yield: {len(opportunities)} items", duration=f"{duration:.2f}s", url=urls[0])
+                logger.info(f"Discovery Yield: {len(opportunities)} items", duration=f"{duration:.2f}s", url=urls[0], source="pre-extracted" if pre_extracted else "ai")
                 discovery_pulse.complete_mission(mission_id, found_count=len(opportunities))
 
                 # PUBLISH RESULTS
